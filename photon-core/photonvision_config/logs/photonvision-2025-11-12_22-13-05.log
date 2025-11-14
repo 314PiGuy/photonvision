@@ -1,0 +1,6 @@
+[2025-11-12 22:13:05] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnxruntime_providers_shared.dll
+[2025-11-12 22:13:05] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnxruntime.dll
+[2025-11-12 22:13:05] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnx_jni.dll
+[2025-11-12 22:13:05] [General - OnnxDetectorJNI] [WARN] ONNX native library does not expose getInputSize; using configured size 640x640
+[2025-11-12 22:13:05] [General - OnnxDetectorJNI] [WARN] ONNX debug input frame requested but environment is headless; skipping
+[2025-11-12 22:13:05] [General - OnnxDetectorJNI] [WARN] Native library missing getLastMaxScore; skipping max score debug

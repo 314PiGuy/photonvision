@@ -1,0 +1,301 @@
+[2025-11-08 13:56:31] [General - Main] [INFO] Starting PhotonVision version dev-v2026.0.0-alpha-2-17-gdef3b9fa on platform Windows x64
+[2025-11-08 13:56:31] [General - OsImageVersion] [WARN] Photon cannot locate base OS image version metadata at \opt\photonvision\image-version
+[2025-11-08 13:56:32] [General - Main] [INFO] WPI JNI libraries loaded.
+[2025-11-08 13:56:32] [General - Main] [INFO] photon-targeting JNI libraries loaded.
+[2025-11-08 13:56:32] [General - Main] [ERROR] Platform does not support RKNN based machine learning!
+[2025-11-08 13:56:32] [General - Main] [ERROR] Platform does not support Rubik based machine learning!
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libamd.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcamd.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcolamd.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libccolamd.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object openblas.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libwinpthread-1.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libgcc_s_seh-1.dll
+[2025-11-08 13:56:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libquadmath-0.dll
+[2025-11-08 13:56:33] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libgfortran-5.dll
+[2025-11-08 13:56:34] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object liblapack.dll
+[2025-11-08 13:56:34] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcholmod.dll
+[2025-11-08 13:56:34] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object mrcal_jni.dll
+[2025-11-08 13:56:34] [General - Main] [INFO] Logging initialized in debug mode.
+[2025-11-08 13:56:34] [General - Main] [DEBUG] Loading ConfigManager...
+[2025-11-08 13:56:34] [Config - SqlConfigProvider] [DEBUG] Using database D:\CodeStuff\photonvision\photon-server\photonvision_config\photon.sqlite
+[2025-11-08 13:56:35] [Config - SqlConfigProvider] [INFO] Using correct database version: 2
+[2025-11-08 13:56:35] [Config - SqlConfigProvider] [DEBUG] Loading config...
+[2025-11-08 13:56:35] [Config - SqlConfigProvider] [ERROR] Could not deserialize apriltag layout! Loading defaults: Provided empty string for class edu.wpi.first.apriltag.AprilTagFieldLayout
+[2025-11-08 13:56:35] [Config - SqlConfigProvider] [ERROR] org.eclipse.jetty.io.EofException: Provided empty string for class edu.wpi.first.apriltag.AprilTagFieldLayout
+	at org.photonvision.common.util.file.JacksonUtils.deserialize(JacksonUtils.java:136)
+	at org.photonvision.common.configuration.SqlConfigProvider.load(SqlConfigProvider.java:298)
+	at org.photonvision.common.configuration.ConfigManager.load(ConfigManager.java:198)
+	at org.photonvision.Main.main(Main.java:287)
+
+[2025-11-08 13:56:35] [General - Main] [INFO] Loading ML models...
+[2025-11-08 13:56:35] [Config - NeuralNetworkModelManager] [WARN] Skipping model Algae v8n as it is not supported on this platform.
+[2025-11-08 13:56:35] [Config - NeuralNetworkModelManager] [WARN] Skipping model COCO as it is not supported on this platform.
+[2025-11-08 13:56:35] [Config - NeuralNetworkModelManager] [WARN] Skipping model Algae Coral v8s as it is not supported on this platform.
+[2025-11-08 13:56:35] [Config - NeuralNetworkModelManager] [WARN] Skipping model COCO as it is not supported on this platform.
+[2025-11-08 13:56:35] [Config - NeuralNetworkModelManager] [INFO] Supported backends: [ONNX]
+[2025-11-08 13:56:35] [Config - NeuralNetworkModelManager] [INFO] Loaded model yolo11n_640 for backend ONNX
+[2025-11-08 13:56:35] [General - Main] [DEBUG] Loading HardwareManager...
+[2025-11-08 13:56:35] [NetworkTables - TimeSyncManager] [DEBUG] Starting TimeSyncClient on localhost (for now)
+[2025-11-08 13:56:35] [NetworkTables - NTDriverStation] [INFO] ROBOT TRANSITIONED MODES! From NtControlWord[m_enabled=false, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=false, m_dsAttached=false] to NtControlWord[m_enabled=false, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=false, m_dsAttached=false]
+[2025-11-08 13:56:35] [General - MetricsManager] [ERROR] Failed to parse NPU usage value: : empty String
+[2025-11-08 13:56:35] [General - MetricsManager] [ERROR] java.lang.NumberFormatException: empty String
+	at java.base/jdk.internal.math.FloatingDecimal.readJavaFormatString(FloatingDecimal.java:1842)
+	at java.base/jdk.internal.math.FloatingDecimal.parseDouble(FloatingDecimal.java:110)
+	at java.base/java.lang.Double.parseDouble(Double.java:792)
+	at org.photonvision.common.hardware.metrics.MetricsManager.getNpuUsage(MetricsManager.java:206)
+	at org.photonvision.common.hardware.metrics.MetricsManager.publishMetrics(MetricsManager.java:268)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:56:35] [General - Main] [DEBUG] Loading NetworkManager...
+[2025-11-08 13:56:35] [General - NetworkManager] [INFO] Network management is disabled.
+[2025-11-08 13:56:35] [General - Main] [DEBUG] Loading NetworkTablesManager...
+[2025-11-08 13:56:35] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:56:35] [NetworkTables - NetworkTablesManager] [INFO] Starting NT Client, server team is 0
+[2025-11-08 13:56:35] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:56:35] [General - Main] [DEBUG] Loading VisionSourceManager...
+[2025-11-08 13:56:35] [Camera - VisionSourceManager] [INFO] Registering loaded camera configs
+[2025-11-08 13:56:35] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:56:35] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:56:35] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:56:35] [NetworkTables - NetworkTablesManager] [DEBUG] MAC address changed! New MAC address is , was null
+[2025-11-08 13:56:35] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:56:35] [Camera - VisionSourceManager] [DEBUG] Creating VisionSource for CameraConfiguration [uniqueName=5edfb1c3-f503-4a44-958e-8989cbce209d, matchedCameraInfo=PVUsbCameraInfo[type=UsbCamera, dev=0, path='\\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global', name='Integrated Camera', otherPaths=[], vid=1266, pid=46927, uniquePath='\\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global'], nickname=Integrated_Camera, deactivated=false, cameraQuirks=QuirkyCamera [baseName=Integrated Camera, displayName=, usbVid=1266, usbPid=46927, quirks={Gain=false, LifeCamControls=false, PsEyeControls=false, FPSCap100=false, AwbRedBlueGain=false, CompletelyBroken=false, AdjustableFocus=false, StickyFPS=false, ArduCamCamera=false, ArduOV9281Controls=false, ArduOV2311Controls=false, ArduOV9782Controls=false, InnoOV9281Controls=false, ArduOV9782=false, See3Cam_24CUG=false}], FOV=70.0]
+[2025-11-08 13:56:35] [Camera - USBCameraSource - Integrated_Camera] [DEBUG] Using Generic USB Cam Settables
+[2025-11-08 13:56:35] [CSCore - PvCSCoreLogger] [INFO] Integrated_Camera: Attempting to connect to USB camera on \\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-08 13:56:35] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Integrated_Camera: opening device (UsbCameraImpl.cpp:456)
+[2025-11-08 13:56:35] [Camera - USBCameraSource - Integrated_Camera] [INFO] Created settables org.photonvision.vision.camera.USBCameras.GenericUSBCameraSettables@7dda48d9
+[2025-11-08 13:56:35] [VisionModule - PipelineManager] [DEBUG] Creating ObjectDetection Pipeline
+[2025-11-08 13:56:35] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object onnxruntime_providers_shared.dll
+[2025-11-08 13:56:35] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object onnxruntime.dll
+[2025-11-08 13:56:35] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object onnx_jni.dll
+[2025-11-08 13:56:36] [General - NetworkUtils] [ERROR] Unable to identify network interfaces!
+[2025-11-08 13:56:36] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, DCS_HTTP, DCS_NETWORKTABLES, DCS_VISIONMODULE, DCS_OTHER, Destinations: DCD_ACTIVEMODULE, DCD_ACTIVEPIPELINESETTINGS, DCD_GENSETTINGS, DCD_UI, DCD_WEBSERVER, DCD_OTHER
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1181_Input_MJPEG_Server: waiting for clients to connect (MjpegServerImpl.cpp:946)
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: waiting for clients to connect (MjpegServerImpl.cpp:946)
+[2025-11-08 13:56:36] [VisionModule - VisionModule - Integrated_Camera] [INFO] Setting pipeline to 0
+[2025-11-08 13:56:36] [VisionModule - VisionModule - Integrated_Camera] [INFO] Pipeline name: New Pipeline
+[2025-11-08 13:56:36] [Camera - VisionSourceManager] [INFO] Finished registering loaded camera configs! Started 1 active VisionModules, with 2 disabled VisionModules
+[2025-11-08 13:56:36] [General - Main] [INFO] Starting server...
+[2025-11-08 13:56:36] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, DCS_HTTP, DCS_NETWORKTABLES, DCS_VISIONMODULE, DCS_OTHER, Destinations: DCD_WEBSERVER
+[2025-11-08 13:56:36] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, DCS_HTTP, DCS_NETWORKTABLES, DCS_VISIONMODULE, DCS_OTHER, Destinations: DCD_UI
+[2025-11-08 13:56:36] [WebServer - DataChangeService] [DEBUG] Added subscriber - Sources: DCS_WEBSOCKET, Destinations: DCD_GENSETTINGS
+[2025-11-08 13:56:36] [WebServer - DataSocketHandler] [INFO] New websocket connection from /127.0.0.1:53168
+[2025-11-08 13:56:36] [VisionModule - VisionSourceSettables - Integrated_Camera] [WARN] Device hasn't connected, cannot enumerate video modes
+[2025-11-08 13:56:36] [VisionModule - VisionModule - Integrated_Camera] [ERROR] no video modes, guhhhhh
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: client connection from 127.0.0.1 (MjpegServerImpl.cpp:957)
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: HTTP request: 'GET /stream.mjpg HTTP/1.1
+'
+ (MjpegServerImpl.cpp:811)
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: command parameters: "" (MjpegServerImpl.cpp:854)
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: request for stream I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server (MjpegServerImpl.cpp:872)
+[2025-11-08 13:56:36] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: Headers send, sending stream now (MjpegServerImpl.cpp:681)
+[2025-11-08 13:56:37] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:56:37] [NetworkTables - NetworkTablesManager] [INFO] Starting NT Client, server team is 0
+[2025-11-08 13:56:37] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:56:37] [NetworkTables - NetworkTablesManager] [ERROR] [NetworkTablesManager] Could not connect to the robot! Will retry in the background...
+[2025-11-08 13:56:38] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2025-11-08 13:56:38] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2025-11-08 13:56:38] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2025-11-08 13:56:38] [CSCore - PvCSCoreLogger] [INFO] Integrated_Camera: Connected to USB camera on \\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-08 13:56:38] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Integrated_Camera: caching properties (UsbCameraImpl.cpp:494)
+[2025-11-08 13:56:38] [Camera - USBFrameProvider - Integrated_Camera] [INFO] Camera connected! running callback
+[2025-11-08 13:56:38] [Camera - USBCameraSource - Integrated_Camera] [DEBUG] Cam Properties Dump:
+Name: raw_Brightness, Kind: kInteger, Value: 2, Min: 0, Max: 255, Dflt: 128, Step: 1
+Name: Brightness, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 50, Step: 1
+Name: raw_Contrast, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 32, Step: 1
+Name: Contrast, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 32, Step: 1
+Name: raw_Hue, Kind: kInteger, Value: 2, Min: -180, Max: 180, Dflt: 0, Step: 1
+Name: Hue, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 50, Step: 1
+Name: raw_Saturation, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 64, Step: 1
+Name: Saturation, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 64, Step: 1
+Name: raw_Sharpness, Kind: kInteger, Value: 2, Min: 0, Max: 7, Dflt: 3, Step: 1
+Name: Sharpness, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 42, Step: 1
+Name: Gamma, Kind: kInteger, Value: 2, Min: 90, Max: 150, Dflt: 120, Step: 1
+Name: ColorEnable, Kind: kInteger, Value: 2, Min: 0, Max: 1, Dflt: 1, Step: 1
+Name: WhiteBalance, Kind: kInteger, Value: 2, Min: 2800, Max: 6500, Dflt: 4600, Step: 10
+Name: BacklightCompensation, Kind: kInteger, Value: 2, Min: 0, Max: 2, Dflt: 1, Step: 1
+Name: Pan, Kind: kInteger, Value: 2, Min: -16, Max: 16, Dflt: 0, Step: 1
+Name: Tilt, Kind: kInteger, Value: 2, Min: -16, Max: 16, Dflt: 0, Step: 1
+Name: Roll, Kind: kInteger, Value: 2, Min: 0, Max: 3, Dflt: 0, Step: 1
+Name: Zoom, Kind: kInteger, Value: 2, Min: 100, Max: 400, Dflt: 100, Step: 10
+Name: raw_Exposure, Kind: kInteger, Value: 2, Min: -12, Max: -3, Dflt: -6, Step: 1
+Name: Exposure, Kind: kInteger, Value: 2, Min: 0, Max: 100, Dflt: 66, Step: 1
+
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [INFO] Caching cscore properties
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [WARN] Expected at least one of the following properties to be available: [exposure_auto, auto_exposure]
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property image_stabilization for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property power_line_frequency for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property scene_mode for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property exposure_metering_mode for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property exposure_dynamic_framerate for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property focus_auto for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property focus_absolute for Integrated_Camera , skipping.
+[2025-11-08 13:56:38] [VisionModule - VisionSourceSettables - Integrated_Camera] [INFO] Setting video mode to FPS: 30 Width: 320 Height: 180 Pixel Format: kYUYV
+[2025-11-08 13:56:38] [CSCore - PvCSCoreLogger] [INFO] Integrated_Camera: Disconnected from \\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-08 13:56:39] [CSCore - PvCSCoreLogger] [INFO] Integrated_Camera: Attempting to connect to USB camera on \\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-08 13:56:39] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Integrated_Camera: opening device (UsbCameraImpl.cpp:456)
+[2025-11-08 13:56:39] [CSCore - PvCSCoreLogger] [INFO] Integrated_Camera: Connected to USB camera on \\?\usb#vid_04f2&pid_b74f&mi_00#6&1384440e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-08 13:56:39] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Integrated_Camera: restoring video mode (UsbCameraImpl.cpp:500)
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] Failed to set video mode!
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] Setting property raw_Exposure to -3 (user requested 20.0 μs)
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] Setting auto exposure to false
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property auto_exposure_bias for Integrated_Camera , skipping.
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property iso_sensitivity_auto for Integrated_Camera , skipping.
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property iso_sensitivity for Integrated_Camera , skipping.
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] Setting property raw_Exposure to -3 (user requested 20.0 μs)
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property white_balance_automatic for Integrated_Camera , skipping.
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] Setting property WhiteBalance to 4000 (user requested 4000 degrees)
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [ERROR] Failed to set camera exposure!: property write failed
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [ERROR] edu.wpi.first.cscore.VideoException: property write failed
+	at edu.wpi.first.cscore.CameraServerJNI.setProperty(Native Method)
+	at edu.wpi.first.cscore.VideoProperty.set(VideoProperty.java:132)
+	at org.photonvision.vision.camera.USBCameras.GenericUSBCameraSettables.setWhiteBalanceTemp(GenericUSBCameraSettables.java:145)
+	at org.photonvision.vision.processes.VisionModule.lambda$setPipeline$9(VisionModule.java:489)
+	at org.photonvision.vision.processes.VisionRunner.lambda$runSynchronously$0(VisionRunner.java:102)
+	at org.photonvision.vision.processes.VisionRunner.update(VisionRunner.java:153)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] Setting auto white balance to false
+[2025-11-08 13:56:39] [VisionModule - VisionSourceSettables - Integrated_Camera] [DEBUG] No property white_balance_automatic for Integrated_Camera , skipping.
+[2025-11-08 13:56:39] [Camera - USBFrameProvider - Integrated_Camera] [ERROR] Error grabbing image: timed out getting frame
+[2025-11-08 13:56:41] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:56:41] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:56:45] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:56:45] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:56:45] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:56:45] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:56:47] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:56:47] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:56:51] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:56:51] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:56:54] [WebServer - Server] [DEBUG] Handled HTTP request of type POST from endpoint /api/utils/publishMetrics of req size 0 bytes & type null with return code 204 for host 127.0.0.1 in 6.9738 ms
+[2025-11-08 13:56:54] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: leaving HTTP client thread (MjpegServerImpl.cpp:919)
+[2025-11-08 13:56:55] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:56:55] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:56:55] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:56:55] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:56:56] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:56:56] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:01] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:01] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:05] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:57:05] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:57:05] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:57:05] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:57:06] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:06] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:11] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:11] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:15] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:57:15] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:57:15] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:57:15] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:57:16] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:16] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:21] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:21] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:25] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:57:25] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:57:25] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:57:25] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:57:26] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:26] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:31] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:31] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-08 13:57:33] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: client connection from 127.0.0.1 (MjpegServerImpl.cpp:957)
+[2025-11-08 13:57:33] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: HTTP request: 'GET /stream.mjpg HTTP/1.1
+'
+ (MjpegServerImpl.cpp:811)
+[2025-11-08 13:57:33] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: command parameters: "" (MjpegServerImpl.cpp:854)
+[2025-11-08 13:57:33] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: request for stream I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server (MjpegServerImpl.cpp:872)
+[2025-11-08 13:57:33] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 10: serve_I-AET-PF4HBEHD_Port_1182_Output_MJPEG_Server: Headers send, sending stream now (MjpegServerImpl.cpp:681)
+[2025-11-08 13:57:35] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-08 13:57:35] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-08 13:57:35] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-08 13:57:35] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-08 13:57:36] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-08 13:57:36] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)

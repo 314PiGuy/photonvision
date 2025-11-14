@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -26,8 +27,13 @@ import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
-import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.Collect2dTargetsPipe;
+import org.photonvision.vision.pipe.impl.FilterObjectDetectionsPipe;
+import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
+import org.photonvision.vision.pipe.impl.ObjectDetectionPipe;
 import org.photonvision.vision.pipe.impl.ObjectDetectionPipe.ObjectDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.SortContoursPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TargetOrientation;
@@ -106,6 +112,8 @@ public class ObjectDetectionPipeline
     @Override
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
+
+        // System.out.println("EEEEEE");
 
         CVPipeResult<List<NeuralNetworkPipeResult>> neuralNetworkResult =
                 objectDetectorPipe.run(frame.colorImage);

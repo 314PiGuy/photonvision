@@ -1,0 +1,62 @@
+See file:///D:/CodeStuff/photonvision/photon-targeting/build/tmp/compilePhotontargetingWindowsx86-64ReleaseSharedLibraryPhotontargetingC/output.txt for all output for compilePhotontargetingWindowsx86-64ReleaseSharedLibraryPhotontargetingC.
+compiling constrained_solvepnp_1_tags_fixed.c successful.
+constrained_solvepnp_1_tags_fixed.c
+
+compiling constrained_solvepnp_2_tags_fixed.c successful.
+constrained_solvepnp_2_tags_fixed.c
+
+compiling constrained_solvepnp_1_tags_free.c successful.
+constrained_solvepnp_1_tags_free.c
+
+compiling constrained_solvepnp_2_tags_free.c successful.
+constrained_solvepnp_2_tags_free.c
+
+compiling constrained_solvepnp_4_tags_fixed.c successful.
+constrained_solvepnp_4_tags_fixed.c
+
+compiling constrained_solvepnp_3_tags_fixed.c successful.
+constrained_solvepnp_3_tags_fixed.c
+
+compiling constrained_solvepnp_3_tags_free.c successful.
+constrained_solvepnp_3_tags_free.c
+
+compiling constrained_solvepnp_5_tags_free.c successful.
+constrained_solvepnp_5_tags_free.c
+
+compiling constrained_solvepnp_5_tags_fixed.c successful.
+constrained_solvepnp_5_tags_fixed.c
+
+compiling constrained_solvepnp_6_tags_fixed.c successful.
+constrained_solvepnp_6_tags_fixed.c
+
+compiling constrained_solvepnp_7_tags_free.c successful.
+constrained_solvepnp_7_tags_free.c
+
+compiling constrained_solvepnp_8_tags_free.c successful.
+constrained_solvepnp_8_tags_free.c
+
+compiling constrained_solvepnp_4_tags_free.c successful.
+constrained_solvepnp_4_tags_free.c
+
+compiling constrained_solvepnp_7_tags_fixed.c successful.
+constrained_solvepnp_7_tags_fixed.c
+
+compiling constrained_solvepnp_6_tags_free.c successful.
+constrained_solvepnp_6_tags_free.c
+
+compiling constrained_solvepnp_8_tags_fixed.c successful.
+constrained_solvepnp_8_tags_fixed.c
+
+compiling constrained_solvepnp_9_tags_free.c successful.
+constrained_solvepnp_9_tags_free.c
+
+compiling constrained_solvepnp_10_tags_free.c successful.
+constrained_solvepnp_10_tags_free.c
+
+compiling constrained_solvepnp_9_tags_fixed.c successful.
+constrained_solvepnp_9_tags_fixed.c
+
+compiling constrained_solvepnp_10_tags_fixed.c successful.
+constrained_solvepnp_10_tags_fixed.c
+
+Finished compilePhotontargetingWindowsx86-64ReleaseSharedLibraryPhotontargetingC, see full log file:///D:/CodeStuff/photonvision/photon-targeting/build/tmp/compilePhotontargetingWindowsx86-64ReleaseSharedLibraryPhotontargetingC/output.txt.

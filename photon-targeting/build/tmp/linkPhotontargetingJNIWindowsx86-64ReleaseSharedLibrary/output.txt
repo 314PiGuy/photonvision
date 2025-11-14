@@ -1,0 +1,5 @@
+See file:///D:/CodeStuff/photonvision/photon-targeting/build/tmp/linkPhotontargetingJNIWindowsx86-64ReleaseSharedLibrary/output.txt for all output for linkPhotontargetingJNIWindowsx86-64ReleaseSharedLibrary.
+linking photontargetingJNI.dll successful.
+   Creating library D:\CodeStuff\photonvision\photon-targeting\build\libs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNI.lib and object D:\CodeStuff\photonvision\photon-targeting\build\libs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNI.exp
+
+Finished linkPhotontargetingJNIWindowsx86-64ReleaseSharedLibrary, see full log file:///D:/CodeStuff/photonvision/photon-targeting/build/tmp/linkPhotontargetingJNIWindowsx86-64ReleaseSharedLibrary/output.txt.

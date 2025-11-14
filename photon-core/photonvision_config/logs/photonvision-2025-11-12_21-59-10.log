@@ -1,0 +1,4 @@
+[2025-11-12 21:59:10] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnxruntime_providers_shared.dll
+[2025-11-12 21:59:10] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnxruntime.dll
+[2025-11-12 21:59:10] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnx_jni.dll
+[2025-11-12 21:59:10] [General - OnnxDetectorJNI] [WARN] ONNX native library does not expose getInputSize; using configured size 640x640

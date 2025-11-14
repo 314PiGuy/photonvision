@@ -1,0 +1,221 @@
+[2025-11-12 20:17:29] [General - Main] [INFO] Starting PhotonVision version dev-v2026.0.0-alpha-2-17-gdef3b9fa on platform Windows x64
+[2025-11-12 20:17:29] [General - OsImageVersion] [WARN] Photon cannot locate base OS image version metadata at \opt\photonvision\image-version
+[2025-11-12 20:17:29] [General - Main] [INFO] WPI JNI libraries loaded.
+[2025-11-12 20:17:29] [General - Main] [INFO] photon-targeting JNI libraries loaded.
+[2025-11-12 20:17:29] [General - Main] [ERROR] Platform does not support RKNN based machine learning!
+[2025-11-12 20:17:29] [General - Main] [ERROR] Platform does not support Rubik based machine learning!
+[2025-11-12 20:17:29] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libamd.dll
+[2025-11-12 20:17:29] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcamd.dll
+[2025-11-12 20:17:29] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcolamd.dll
+[2025-11-12 20:17:30] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libccolamd.dll
+[2025-11-12 20:17:30] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object openblas.dll
+[2025-11-12 20:17:30] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libwinpthread-1.dll
+[2025-11-12 20:17:30] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libgcc_s_seh-1.dll
+[2025-11-12 20:17:30] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libquadmath-0.dll
+[2025-11-12 20:17:30] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libgfortran-5.dll
+[2025-11-12 20:17:31] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object liblapack.dll
+[2025-11-12 20:17:31] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object libcholmod.dll
+[2025-11-12 20:17:31] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object mrcal_jni.dll
+[2025-11-12 20:17:31] [General - Main] [INFO] Logging initialized in debug mode.
+[2025-11-12 20:17:31] [General - Main] [DEBUG] Loading ConfigManager...
+[2025-11-12 20:17:31] [Config - SqlConfigProvider] [DEBUG] Using database D:\CodeStuff\photonvision\photon-server\photonvision_config\photon.sqlite
+[2025-11-12 20:17:32] [Config - SqlConfigProvider] [INFO] Using correct database version: 2
+[2025-11-12 20:17:32] [Config - SqlConfigProvider] [DEBUG] Loading config...
+[2025-11-12 20:17:32] [Config - SqlConfigProvider] [ERROR] Could not deserialize apriltag layout! Loading defaults: Provided empty string for class edu.wpi.first.apriltag.AprilTagFieldLayout
+[2025-11-12 20:17:32] [Config - SqlConfigProvider] [ERROR] org.eclipse.jetty.io.EofException: Provided empty string for class edu.wpi.first.apriltag.AprilTagFieldLayout
+	at org.photonvision.common.util.file.JacksonUtils.deserialize(JacksonUtils.java:136)
+	at org.photonvision.common.configuration.SqlConfigProvider.load(SqlConfigProvider.java:298)
+	at org.photonvision.common.configuration.ConfigManager.load(ConfigManager.java:198)
+	at org.photonvision.Main.main(Main.java:287)
+
+[2025-11-12 20:17:32] [General - Main] [INFO] Loading ML models...
+[2025-11-12 20:17:32] [Config - NeuralNetworkModelManager] [WARN] Skipping model Algae v8n as it is not supported on this platform.
+[2025-11-12 20:17:32] [Config - NeuralNetworkModelManager] [WARN] Skipping model COCO as it is not supported on this platform.
+[2025-11-12 20:17:32] [Config - NeuralNetworkModelManager] [WARN] Skipping model Algae Coral v8s as it is not supported on this platform.
+[2025-11-12 20:17:32] [Config - NeuralNetworkModelManager] [WARN] Skipping model COCO as it is not supported on this platform.
+[2025-11-12 20:17:32] [Config - NeuralNetworkModelManager] [INFO] Supported backends: [ONNX]
+[2025-11-12 20:17:32] [Config - NeuralNetworkModelManager] [INFO] Loaded model yolo11n_640 for backend ONNX
+[2025-11-12 20:17:32] [General - Main] [DEBUG] Loading HardwareManager...
+[2025-11-12 20:17:32] [NetworkTables - TimeSyncManager] [DEBUG] Starting TimeSyncClient on localhost (for now)
+[2025-11-12 20:17:32] [NetworkTables - NTDriverStation] [INFO] ROBOT TRANSITIONED MODES! From NtControlWord[m_enabled=false, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=false, m_dsAttached=false] to NtControlWord[m_enabled=false, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=false, m_dsAttached=false]
+[2025-11-12 20:17:32] [General - MetricsManager] [ERROR] Failed to parse NPU usage value: : empty String
+[2025-11-12 20:17:32] [General - MetricsManager] [ERROR] java.lang.NumberFormatException: empty String
+	at java.base/jdk.internal.math.FloatingDecimal.readJavaFormatString(FloatingDecimal.java:1842)
+	at java.base/jdk.internal.math.FloatingDecimal.parseDouble(FloatingDecimal.java:110)
+	at java.base/java.lang.Double.parseDouble(Double.java:792)
+	at org.photonvision.common.hardware.metrics.MetricsManager.getNpuUsage(MetricsManager.java:206)
+	at org.photonvision.common.hardware.metrics.MetricsManager.publishMetrics(MetricsManager.java:268)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:17:32] [General - Main] [DEBUG] Loading NetworkManager...
+[2025-11-12 20:17:32] [General - NetworkManager] [INFO] Network management is disabled.
+[2025-11-12 20:17:32] [General - Main] [DEBUG] Loading NetworkTablesManager...
+[2025-11-12 20:17:32] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-12 20:17:32] [NetworkTables - NetworkTablesManager] [INFO] Starting NT Client, server team is 0
+[2025-11-12 20:17:32] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-12 20:17:32] [General - Main] [DEBUG] Loading VisionSourceManager...
+[2025-11-12 20:17:32] [Camera - VisionSourceManager] [INFO] Registering loaded camera configs
+[2025-11-12 20:17:32] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:17:32] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:17:32] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:17:32] [NetworkTables - NetworkTablesManager] [DEBUG] MAC address changed! New MAC address is , was null
+[2025-11-12 20:17:32] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:17:32] [Camera - VisionSourceManager] [DEBUG] Creating VisionSource for CameraConfiguration [uniqueName=9cdf4d6d-fcea-4e8e-b2cb-9604d4bcb494, matchedCameraInfo=PVUsbCameraInfo[type=UsbCamera, dev=0, path='\\?\usb#vid_18d1&pid_4eee&mi_00#6&3b09c1d9&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global', name='Android Webcam', otherPaths=[], vid=6353, pid=20206, uniquePath='\\?\usb#vid_18d1&pid_4eee&mi_00#6&3b09c1d9&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global'], nickname=Android_Webcam, deactivated=false, cameraQuirks=QuirkyCamera [baseName=Android Webcam, displayName=, usbVid=6353, usbPid=20206, quirks={Gain=false, LifeCamControls=false, PsEyeControls=false, FPSCap100=false, AwbRedBlueGain=false, CompletelyBroken=false, AdjustableFocus=false, StickyFPS=false, ArduCamCamera=false, ArduOV9281Controls=false, ArduOV2311Controls=false, ArduOV9782Controls=false, InnoOV9281Controls=false, ArduOV9782=false, See3Cam_24CUG=false}], FOV=70.0]
+[2025-11-12 20:17:32] [Camera - USBCameraSource - Android_Webcam] [DEBUG] Using Generic USB Cam Settables
+[2025-11-12 20:17:32] [CSCore - PvCSCoreLogger] [INFO] Android_Webcam: Attempting to connect to USB camera on \\?\usb#vid_18d1&pid_4eee&mi_00#6&3b09c1d9&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-12 20:17:32] [Camera - USBCameraSource - Android_Webcam] [INFO] Created settables org.photonvision.vision.camera.USBCameras.GenericUSBCameraSettables@7dda48d9
+[2025-11-12 20:17:32] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Android_Webcam: opening device (UsbCameraImpl.cpp:456)
+[2025-11-12 20:17:32] [CSCore - PvCSCoreLogger] [INFO] Android_Webcam: Connected to USB camera on \\?\usb#vid_18d1&pid_4eee&mi_00#6&3b09c1d9&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\global
+[2025-11-12 20:17:32] [CSCore - PvCSCoreLogger] [DEBUG] CS: DEBUG 7: Android_Webcam: caching properties (UsbCameraImpl.cpp:494)
+[2025-11-12 20:17:32] [VisionModule - PipelineManager] [DEBUG] Creating ObjectDetection Pipeline
+[2025-11-12 20:17:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object onnxruntime_providers_shared.dll
+[2025-11-12 20:17:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object onnxruntime.dll
+[2025-11-12 20:17:32] [Camera - MrCalJNILoader] [INFO] Successfully loaded shared object onnx_jni.dll
+[2025-11-12 20:17:34] [Config - ConfigManager] [DEBUG] Saving to disk...
+[2025-11-12 20:17:34] [Config - SqlConfigProvider] [DEBUG] Saving to disk
+[2025-11-12 20:17:34] [Config - SqlConfigProvider] [INFO] Settings saved!
+[2025-11-12 20:17:42] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:17:42] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:17:42] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:17:42] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:17:52] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:17:52] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:17:52] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:17:52] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:17:56] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-12 20:17:56] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-12 20:17:56] [NetworkTables - NetworkTablesManager] [INFO] Starting NT Client, server team is 0
+[2025-11-12 20:17:56] [NetworkTables - NetworkTablesManager] [ERROR] [NetworkTablesManager] Could not connect to the robot! Will retry in the background...
+[2025-11-12 20:18:02] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:18:02] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:18:02] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:18:02] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:18:12] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:18:12] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:18:12] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:18:12] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:18:20] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-12 20:18:20] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-12 20:18:22] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:18:22] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:18:22] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:18:22] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:18:32] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:18:32] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:18:32] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:18:32] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:18:42] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:18:42] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:18:42] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:18:42] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!
+[2025-11-12 20:18:44] [NetworkTables - NetworkTablesManager] [DEBUG] Starting NT Client with hostname: I-AET-PF4HBEHD
+[2025-11-12 20:18:44] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: starting network client (NetworkClient.cpp:46)
+[2025-11-12 20:18:52] [General - NetworkUtils] [ERROR] No MAC address found for Hyper-V Virtual Switch Extension Adapter-Hyper-V Virtual Switch Extension Filter-0000
+[2025-11-12 20:18:52] [General - NetworkUtils] [ERROR] Error getting MAC address:: Cannot load from byte/boolean array because "mac" is null
+[2025-11-12 20:18:52] [General - NetworkUtils] [ERROR] java.lang.NullPointerException: Cannot load from byte/boolean array because "mac" is null
+	at org.photonvision.common.networking.NetworkUtils.formatMacAddress(NetworkUtils.java:259)
+	at org.photonvision.common.networking.NetworkUtils.getMacAddress(NetworkUtils.java:236)
+	at org.photonvision.common.dataflow.networktables.NetworkTablesManager.checkHostnameAndCameraNames(NetworkTablesManager.java:253)
+	at org.photonvision.common.util.TimedTaskManager$CaughtScheduledThreadPoolExecutor.lambda$wrap$0(TimedTaskManager.java:56)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:358)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:305)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+[2025-11-12 20:18:52] [NetworkTables - NetworkTablesManager] [ERROR] Cannot check hostname and camera names, MAC address is not set!

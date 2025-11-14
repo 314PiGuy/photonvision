@@ -1,0 +1,17 @@
+See file:///D:/CodeStuff/photonvision/photon-targeting/build/tmp/compilePhotontargetingJNIWindowsx86-64ReleaseSharedLibraryPhotontargetingJNICpp/output.txt for all output for compilePhotontargetingJNIWindowsx86-64ReleaseSharedLibraryPhotontargetingJNICpp.
+compiling CscoreExtras.cpp successful.
+CscoreExtras.cpp
+
+compiling FileLoggerExtrasJNI.cpp successful.
+FileLoggerExtrasJNI.cpp
+
+compiling TimeSyncServerJNI.cpp successful.
+TimeSyncServerJNI.cpp
+
+compiling TimeSyncClientJNI.cpp successful.
+TimeSyncClientJNI.cpp
+
+compiling ConstrainedSolvepnpJNI.cpp successful.
+ConstrainedSolvepnpJNI.cpp
+
+Finished compilePhotontargetingJNIWindowsx86-64ReleaseSharedLibraryPhotontargetingJNICpp, see full log file:///D:/CodeStuff/photonvision/photon-targeting/build/tmp/compilePhotontargetingJNIWindowsx86-64ReleaseSharedLibraryPhotontargetingJNICpp/output.txt.

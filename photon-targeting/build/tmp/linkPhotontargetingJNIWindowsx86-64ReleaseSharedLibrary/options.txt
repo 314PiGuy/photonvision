@@ -1,0 +1,39 @@
+/DEBUG:FULL
+/PDBALTPATH:%_PDB%
+/DEPENDENTLOADFLAG:0x1100
+/OPT:REF
+/OPT:ICF
+/OUT:D:\CodeStuff\photonvision\photon-targeting\build\libs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNI.dll
+/NOLOGO
+/DLL
+/IMPLIB:D:\CodeStuff\photonvision\photon-targeting\build\libs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNI.lib
+"/LIBPATH:C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64"
+"/LIBPATH:C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\um\x64"
+"/LIBPATH:C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\ucrt\x64"
+D:\CodeStuff\photonvision\photon-targeting\build\objs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNICpp\1mpfrpt6ehbt2d9hzgcz9qdkj\CscoreExtras.obj
+D:\CodeStuff\photonvision\photon-targeting\build\objs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNICpp\47pddaogonq7675yrv9vvc5t2\TimeSyncClientJNI.obj
+D:\CodeStuff\photonvision\photon-targeting\build\objs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNICpp\8ech9fj2z295yrbujl0db49tf\FileLoggerExtrasJNI.obj
+D:\CodeStuff\photonvision\photon-targeting\build\objs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNICpp\9yaz4agecdfomqssfn4azkeo6\TimeSyncServerJNI.obj
+D:\CodeStuff\photonvision\photon-targeting\build\objs\photontargetingJNI\shared\windowsx86-64\release\photontargetingJNICpp\eser6linf1i5225v88d7o24jo\ConstrainedSolvepnpJNI.obj
+D:\CodeStuff\photonvision\photon-targeting\build\libs\photontargeting\shared\windowsx86-64\release\photontargeting.lib
+D:\packages\gradle\caches\8.14.3\transforms\2101e92ffd16ff221913b42958282dbc\transformed\wpiutil-cpp-2025.3.2-windowsx86-64\windows\x86-64\shared\wpiutil.lib
+D:\packages\gradle\caches\8.14.3\transforms\18b62f91e0f75c38ce6479014e100a40\transformed\wpimath-cpp-2025.3.2-windowsx86-64\windows\x86-64\shared\wpimath.lib
+D:\packages\gradle\caches\8.14.3\transforms\f1ae3ec3a25afc11186fc67cc71cb570\transformed\wpinet-cpp-2025.3.2-windowsx86-64\windows\x86-64\shared\wpinet.lib
+D:\packages\gradle\caches\8.14.3\transforms\2c58b78c3e68113a3961b1ae77ee4604\transformed\ntcore-cpp-2025.3.2-windowsx86-64\windows\x86-64\shared\ntcore.lib
+D:\packages\gradle\caches\8.14.3\transforms\5649fb6d7195f4da3fa93ab57c8d2f8b\transformed\cscore-cpp-2025.3.2-windowsx86-64\windows\x86-64\shared\cscore.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_aruco4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_calib3d4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_core4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_dnn4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_features2d4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_flann4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_gapi4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_highgui4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_imgcodecs4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_imgproc4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_ml4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_objdetect4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_photo4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_stitching4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_video4100.lib
+D:\packages\gradle\caches\8.14.3\transforms\f8f1e86489e7652e157669e740398259\transformed\opencv-cpp-4.10.0-3-windowsx86-64\windows\x86-64\shared\opencv_videoio4100.lib

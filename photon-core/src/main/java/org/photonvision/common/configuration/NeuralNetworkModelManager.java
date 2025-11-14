@@ -39,6 +39,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.objects.Model;
+import org.photonvision.vision.objects.OnnxModel;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
 
@@ -199,13 +200,20 @@ public class NeuralNetworkModelManager {
      */
     private NeuralNetworkModelManager() {
         switch (Platform.getCurrentPlatform()) {
-            case LINUX_QCS6490 -> supportedBackends.add(Family.RUBIK);
-            case LINUX_RK3588_64 -> supportedBackends.add(Family.RKNN);
+            case LINUX_QCS6490 -> {
+                supportedBackends.add(Family.RUBIK);
+                supportedBackends.add(Family.ONNX);
+            }
+            case LINUX_RK3588_64 -> {
+                supportedBackends.add(Family.RKNN);
+                supportedBackends.add(Family.ONNX);
+            }
+            case WINDOWS_64, LINUX_64, LINUX_AARCH64, LINUX_ARM64, LINUX_RASPBIAN64, MACOS ->
+                    supportedBackends.add(Family.ONNX);
             default -> {
                 logger.warn(
                         "No supported neural network backends found for this platform: "
                                 + Platform.getCurrentPlatform());
-                // No supported backends, so we won't load any models
                 return;
             }
         }
@@ -228,7 +236,8 @@ public class NeuralNetworkModelManager {
 
     public enum Family {
         RKNN(".rknn"),
-        RUBIK(".tflite");
+        RUBIK(".tflite"),
+        ONNX(".onnx");
 
         private final String fileExtension;
 
@@ -297,7 +306,15 @@ public class NeuralNetworkModelManager {
             return Optional.empty();
         }
 
-        return models.get(supportedBackends.get(0)).stream().findFirst();
+        for (Family backend : supportedBackends) {
+            List<Model> backendModels = models.get(backend);
+            if (backendModels != null && !backendModels.isEmpty()) {
+                return Optional.of(backendModels.get(0));
+            }
+        }
+
+        logger.warn("No models discovered for supported backends: " + supportedBackends);
+        return Optional.empty();
     }
 
     // Do checking later on, when we create the model object
@@ -331,12 +348,9 @@ public class NeuralNetworkModelManager {
 
         try {
             switch (properties.family()) {
-                case RKNN -> {
-                    models.get(properties.family()).add(new RknnModel(properties));
-                }
-                case RUBIK -> {
-                    models.get(properties.family()).add(new RubikModel(properties));
-                }
+                case RKNN -> models.get(properties.family()).add(new RknnModel(properties));
+                case RUBIK -> models.get(properties.family()).add(new RubikModel(properties));
+                case ONNX -> models.get(properties.family()).add(new OnnxModel(properties));
             }
             logger.info(
                     "Loaded model "
