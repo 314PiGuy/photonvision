@@ -1,0 +1,162 @@
+import org.gradle.api.file.DuplicatesStrategy
+
+apply plugin: "com.github.node-gradle.node"
+apply plugin: 'com.gradleup.shadow'
+apply plugin: "application"
+
+apply from: "${rootDir}/shared/common.gradle"
+
+dependencies {
+    implementation project(':photon-core')
+
+    // Zip
+    implementation 'org.zeroturnaround:zt-zip:1.14'
+
+    // Needed for Javalin Runtime Logging
+    implementation "org.slf4j:slf4j-simple:2.0.7"
+}
+
+group = 'org.photonvision'
+version  = versionString + (project.hasProperty('pionly') ? "-raspi" : "")
+
+application {
+    mainClass = 'org.photonvision.Main'
+}
+
+jar {
+    from file("$rootDir/LICENSE")
+}
+
+shadowJar {
+    dependsOn 'buildAndCopyUI'
+
+    archiveBaseName = "photonvision"
+    archiveVersion = project.version as String
+    archiveClassifier.set(wpilibTools.currentPlatform.platformName)
+    configurations = [
+        project.configurations.runtimeClasspath
+    ]
+}
+
+node {
+    // Ensure a consistent toolchain for pnpm-based client builds
+    version = "22.11.0"
+    pnpmVersion = "9.12.2"
+    download = true
+    nodeProjectDir = file("${projectDir}/../photon-client")
+}
+
+def webResourceDir = file("${projectDir}/src/main/resources/web")
+
+tasks.register('copyClientUIToResources', Copy) {
+    dependsOn "buildClient"
+    from "${projectDir}/../photon-client/dist/"
+    into webResourceDir
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    doFirst {
+        delete fileTree(webResourceDir) {
+            exclude "favicon.ico"
+        }
+    }
+}
+
+tasks.register('buildClient', PnpmTask) {
+    inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")
+    outputs.dir file("${projectDir}/../photon-client/dist")
+    args = ["build"]
+    dependsOn "pnpmInstall"
+}
+
+tasks.register('buildAndCopyUI') {
+    dependsOn "buildClient"
+    finalizedBy "copyClientUIToResources"
+}
+
+processResources {
+    dependsOn copyClientUIToResources
+}
+
+run {
+    environment "PATH_PREFIX", "../"
+
+    if (project.hasProperty("profile")) {
+        jvmArgs=[
+            "-Dcom.sun.management.jmxremote=true",
+            "-Dcom.sun.management.jmxremote.ssl=false",
+            "-Dcom.sun.management.jmxremote.authenticate=false",
+            "-Dcom.sun.management.jmxremote.port=5000",
+            "-Djava.rmi.server.hostname=0.0.0.0",
+        ]
+    }
+}
+
+import edu.wpi.first.deployutils.deploy.artifact.*
+import edu.wpi.first.deployutils.deploy.target.RemoteTarget
+import edu.wpi.first.deployutils.deploy.target.location.SshDeployLocation
+deploy {
+    targets {
+        pi(RemoteTarget) {
+            // Can't login as root, so deploy our file to /tmp, which is owned by pi
+            directory = '/tmp'
+            locations {
+                ssh(SshDeployLocation) {
+                    if (project.hasProperty('tgtIP')) {
+                        address = tgtIP
+                    } else {
+                        address = "photonvision.local"
+                    }
+                    if (project.hasProperty('tgtUser')) {
+                        user = tgtUser
+                    } else {
+                        user = "pi"
+                    }
+                    if (project.hasProperty('tgtPw')) {
+                        password = tgtPw
+                    } else {
+                        password = "raspberry"
+                    }
+                }
+            }
+            artifacts {
+                stop(CommandArtifact) {
+                    predeploy << {
+                        println 'Starting deployment to ' + deploy.targets.pi.locations.ssh.address
+                        println 'targetArch = ' + wpilibTools.platformMapper.currentPlatform.platformName
+                    }
+                    //Stop photonvision before manipulating its files
+                    command = "sudo systemctl stop photonvision.service"
+                }
+                sleep(CommandArtifact) {
+                    // gerth2 - I was having issues with the .jar being in use still - waiting a tiny bit here seems to get rid of it on a pi4
+                    command = "sleep 3"
+                    dependsOn artifacts.stop.deployTask
+                }
+                photonvisionJar(JavaArtifact) {
+                    jarTask = shadowJar
+                    filename = "photonvision.jar"
+                    dependsOn artifacts.sleep.deployTask
+                }
+                moveJar(CommandArtifact) {
+                    //belt-and-suspenders. Make sure the old jar is gone first before moving in the new .jar
+                    command = "sudo rm -f /opt/photonvision/photonvision.jar && sudo mv /tmp/photonvision.jar /opt/photonvision/photonvision.jar"
+                    dependsOn artifacts.photonvisionJar.deployTask
+                }
+                chmodJar(CommandArtifact) {
+                    //Make sure it's executable
+                    command = "sudo chmod +x /opt/photonvision/photonvision.jar"
+                    dependsOn artifacts.moveJar.deployTask
+                }
+                start(CommandArtifact) {
+                    //Fire up photonvision again
+                    command = "sudo systemctl start photonvision.service"
+                    dependsOn artifacts.chmodJar.deployTask
+                }
+                cleanUp(CommandArtifact) {
+                    command = 'sudo rm -f /tmp/photonvision.jar'
+                    dependsOn artifacts.moveJar.deployTask
+                }
+            }
+        }
+    }
+}

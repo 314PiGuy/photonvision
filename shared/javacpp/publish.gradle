@@ -1,0 +1,110 @@
+import java.security.MessageDigest
+apply plugin: 'maven-publish'
+
+def outputsFolder = file("$buildDir/outputs")
+
+def baseArtifactId = nativeName
+def artifactGroupId = 'org.photonvision'
+def zipBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-cpp_CLS"
+
+def licenseFile = ext.licenseFile
+// Quick hack to make this name visible to photon-lib for combined
+ext.zipBaseName = zipBaseName
+ext.artifactGroupId = artifactGroupId
+
+task cppSourcesZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "sources"
+
+    from(licenseFile) {
+        into '/'
+    }
+
+    from("$projectDir/src/main/native/cpp") {
+        into '/'
+    }
+
+    // assume we will always have proto sources
+    from("$buildDir/generated/source/proto/main/cpp") {
+        into '/'
+        // Only include generated C++ source files, not headers
+        include "**/*.cc", "**/*.cpp"
+    }
+    dependsOn generateProto
+}
+
+task cppHeadersZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "headers"
+
+    from(licenseFile) {
+        into '/'
+    }
+
+    ext.includeDirs = [
+        project.file('src/main/native/include')
+    ]
+
+    ext.includeDirs.each {
+        from(it) {
+            into '/'
+        }
+    }
+
+    // assume we will always have proto sources
+    from("$buildDir/generated/source/proto/main/cpp") {
+        into '/'
+        // Only include generated C++ headers
+        include "**/*.h"
+    }
+    dependsOn generateProto
+}
+
+artifacts {
+    archives cppHeadersZip
+    archives cppSourcesZip
+}
+
+addTaskToCopyAllOutputs(cppSourcesZip)
+addTaskToCopyAllOutputs(cppHeadersZip)
+
+model {
+    publishing {
+        def cppTaskList = createComponentZipTasks($.components, [
+            nativeName,
+            "${nativeName}JNI"
+        ], zipBaseName, Zip, project, includeStandardZipFormat)
+
+        publications {
+            cpp(MavenPublication) {
+                cppTaskList.each {
+                    artifact it
+                }
+                artifact cppHeadersZip
+                artifact cppSourcesZip
+
+                artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
+        }
+
+        repositories {
+            maven {
+                // If we're trying to copy local outputs, just throw everything into build/maven
+                // The problem here is we can't specify which repo to publish to easily, so we have to choose one or the other
+                if (project.hasProperty('copyOfflineArtifacts')) {
+                    url(localMavenURL)
+                } else {
+                    url(photonMavenURL)
+                    credentials {
+                        username 'ghactions'
+                        password System.getenv("ARTIFACTORY_API_KEY")
+                    }
+                }
+            }
+        }
+    }
+}

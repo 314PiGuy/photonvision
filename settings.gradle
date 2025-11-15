@@ -1,0 +1,6 @@
+include 'photon-targeting'
+include 'photon-core'
+include 'photon-server'
+include 'photon-lib'
+include 'photon-docs'
+include 'onnx_jni'
