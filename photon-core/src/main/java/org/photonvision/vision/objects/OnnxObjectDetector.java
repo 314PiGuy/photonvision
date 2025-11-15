@@ -79,7 +79,12 @@ public class OnnxObjectDetector implements ObjectDetector {
 
         long instancePtr;
         try {
-            instancePtr = OnnxJNI.create(model.modelFile.getPath());
+            String modelPath = model.modelFile.getPath();
+            logger.info("Creating ONNX detector for model at: " + modelPath);
+            logger.info("Model file exists: " + model.modelFile.exists());
+            logger.info("Model file size: " + model.modelFile.length() + " bytes");
+            logger.info("Model file absolute path: " + model.modelFile.getAbsolutePath());
+            instancePtr = OnnxJNI.create(modelPath);
         } catch (RuntimeException ex) {
             logger.error("Failed to create ONNX detector from path " + model.modelFile.getPath(), ex);
             throw ex;

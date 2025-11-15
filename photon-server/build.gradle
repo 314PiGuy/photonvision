@@ -37,6 +37,10 @@ shadowJar {
 }
 
 node {
+    // Ensure a consistent toolchain for pnpm-based client builds
+    version = "22.11.0"
+    pnpmVersion = "9.12.2"
+    download = true
     nodeProjectDir = file("${projectDir}/../photon-client")
 }
 

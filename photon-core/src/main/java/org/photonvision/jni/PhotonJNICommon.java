@@ -65,6 +65,26 @@ public abstract class PhotonJNICommon {
 
                 logger.info("Successfully loaded shared object " + temp.getName());
 
+                // Create versioned symlink for libonnxruntime.so -> libonnxruntime.so.1
+                // This is needed because libonnx_jni.so is linked against libonnxruntime.so.1
+                if (nativeLibName.equals("libonnxruntime.so")) {
+                    File symlinkTarget =
+                            new File(System.getProperty("java.io.tmpdir"), "libonnxruntime.so.1");
+                    if (!symlinkTarget.exists()) {
+                        try {
+                            java.nio.file.Files.createSymbolicLink(
+                                    symlinkTarget.toPath(), temp.toPath().getFileName());
+                            logger.info("Created symlink: " + symlinkTarget.getName() + " -> " + temp.getName());
+                        } catch (Exception linkEx) {
+                            logger.warn(
+                                    "Failed to create symlink for "
+                                            + nativeLibName
+                                            + ": "
+                                            + linkEx.getMessage());
+                        }
+                    }
+                }
+
             } catch (UnsatisfiedLinkError e) {
                 logger.error("Couldn't load shared object " + libraryName, e);
                 e.printStackTrace();

@@ -697,6 +697,8 @@ public class RequestHandler {
                     .neuralNetworkPropertyManager()
                     .addModelProperties(modelProperties);
 
+        ConfigManager.getInstance().requestSave();
+
             logger.debug(
                     ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().toString());
 
@@ -905,6 +907,8 @@ public class RequestHandler {
                 return;
             }
 
+            ConfigManager.getInstance().requestSave();
+
             NeuralNetworkModelManager.getInstance().discoverModels();
 
             ctx.status(200).result("Successfully deleted object detection model");
@@ -962,6 +966,8 @@ public class RequestHandler {
                 return;
             }
 
+            ConfigManager.getInstance().requestSave();
+
             NeuralNetworkModelManager.getInstance().discoverModels();
             ctx.status(200).result("Successfully renamed object detection model");
         } catch (Exception e) {
@@ -977,6 +983,7 @@ public class RequestHandler {
         try {
             NeuralNetworkModelManager.getInstance().clearModels();
             NeuralNetworkModelManager.getInstance().extractModels();
+            ConfigManager.getInstance().requestSave();
             ctx.status(200).result("Successfully cleared and reset object detection models");
         } catch (Exception e) {
             ctx.status(500);
