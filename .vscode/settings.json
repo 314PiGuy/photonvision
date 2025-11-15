@@ -2,5 +2,13 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.cwd": "photon-lib/py",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "files.associations": {
+        "chrono": "cpp",
+        "variant": "cpp",
+        "future": "cpp",
+        "system_error": "cpp",
+        "typeindex": "cpp",
+        "xlocale": "cpp"
+    }
 }

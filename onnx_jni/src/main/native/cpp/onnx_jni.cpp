@@ -94,6 +94,33 @@ std::basic_string<ORTCHAR_T> ToOrtPath(const char* path) {
 #endif
 }
 
+#ifdef _WIN32
+std::string OrtPathToUtf8(const std::basic_string<ORTCHAR_T>& ortPath) {
+    if (ortPath.empty()) {
+        return {};
+    }
+
+    int required = WideCharToMultiByte(
+            CP_UTF8, 0, ortPath.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (required <= 0) {
+        return "<conversion failed>";
+    }
+
+    std::string utf8(static_cast<size_t>(required - 1), '\0');
+    int converted = WideCharToMultiByte(
+            CP_UTF8, 0, ortPath.c_str(), -1, utf8.data(), required, nullptr, nullptr);
+    if (converted <= 0) {
+        return "<conversion failed>";
+    }
+
+    return utf8;
+}
+#else
+std::string OrtPathToUtf8(const std::basic_string<ORTCHAR_T>& ortPath) {
+    return ortPath;
+}
+#endif
+
 Ort::Env& GetOrtEnv() {
     static Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "PhotonVisionOnnx");
     return env;
@@ -536,7 +563,7 @@ JNIEXPORT jlong JNICALL Java_org_photonvision_onnx_OnnxJNI_create(
 
         detector = std::make_unique<OnnxDetector>();
         auto ortPath = ToOrtPath(path);
-        std::cerr << "[ONNX JNI] Creating session with path: " << ortPath << std::endl;
+        std::cerr << "[ONNX JNI] Creating session with path: " << OrtPathToUtf8(ortPath) << std::endl;
         detector->session = std::make_unique<Ort::Session>(GetOrtEnv(), ortPath.c_str(), options);
         std::cerr << "[ONNX JNI] Session created successfully" << std::endl;
 

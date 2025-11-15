@@ -1,5 +1,0 @@
-[2025-11-12 22:21:06] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnxruntime_providers_shared.dll
-[2025-11-12 22:21:06] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnxruntime.dll
-[2025-11-12 22:21:06] [Camera - OnnxDetectorJNI] [INFO] Successfully loaded shared object onnx_jni.dll
-[2025-11-12 22:21:06] [General - OnnxDetectorJNI] [WARN] ONNX debug input frame requested but environment is headless; skipping
-[2025-11-12 22:21:06] [General - OnnxDetectorJNI] [INFO] Native library missing getLastMaxScore; using Java fallback for max score debug

@@ -1,5 +1,7 @@
 \.idea/
 
+*.gradle
+
 *.pyc
 __pycache__/
 
@@ -122,6 +124,9 @@ compile_commands.json
 *.prefs
 *.jfr
 .DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
 # *.iml
 *.bin
 .gradle
@@ -148,3 +153,16 @@ node_modules
 dist
 components.d.ts
 photon-server/src/main/resources/web/index.html
+.pnpm-debug.log
+.npm/_logs/
+photon-client/.pnpm-store
+photon-client/pnpm-debug.log
+
+# Native build outputs
+onnx_jni/cmake_build/
+onnx_jni/build/
+onnx_jni/bin/
+**/CMakeCache.txt
+**/CMakeFiles/
+**/cmake_install.cmake
+onnx_jni/cmake_build/Makefile
