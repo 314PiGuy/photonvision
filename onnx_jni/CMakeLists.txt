@@ -18,7 +18,7 @@ set(BUILD_SHARED_LIBS ON)
 find_package(JNI REQUIRED)
 include_directories(${JNI_INCLUDE_DIRS})
 
-set(ONNXRUNTIME_VERSION "1.19.0")
+set(ONNXRUNTIME_VERSION "1.19.2")
 set(ONNXRUNTIME_URL "")
 set(ONNXRUNTIME_ARCHIVE "")
 
@@ -115,6 +115,8 @@ file(GLOB_RECURSE OPENCV_LIBRARY_FILES
     "${opencv_libs_SOURCE_DIR}/*.so*"
 )
 
+# We need both the Java bindings AND the C++ component libraries for JNI to work
+# Don't filter - use all libraries
 message(STATUS "OpenCV library files: ${OPENCV_LIBRARY_FILES}")
 
 file(GLOB_RECURSE OPENCV_RUNTIME_FILES

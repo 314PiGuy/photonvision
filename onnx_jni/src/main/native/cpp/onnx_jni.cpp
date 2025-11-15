@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <iostream>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -509,37 +510,76 @@ JNIEXPORT jlong JNICALL Java_org_photonvision_onnx_OnnxJNI_create(
 
     std::unique_ptr<OnnxDetector> detector;
     try {
+        std::cerr << "[ONNX JNI] Attempting to load model from: " << path << std::endl;
+        
+        // Check if file exists and is readable
+        FILE* testFile = fopen(path, "rb");
+        if (testFile == nullptr) {
+            std::string error = "Model file does not exist or is not readable: ";
+            error += path;
+            std::cerr << "[ONNX JNI] " << error << std::endl;
+            ThrowRuntimeException(env, error.c_str());
+            env->ReleaseStringUTFChars(modelPath, path);
+            return 0;
+        }
+        fseek(testFile, 0, SEEK_END);
+        long fileSize = ftell(testFile);
+        fclose(testFile);
+        std::cerr << "[ONNX JNI] Model file size: " << fileSize << " bytes" << std::endl;
+        
         Ort::SessionOptions options;
         options.SetIntraOpNumThreads(1);
         options.SetInterOpNumThreads(1);
         options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
         options.DisableMemPattern();
-        options.SetLogSeverityLevel(3);
+        options.SetLogSeverityLevel(2); // Changed to INFO level for debugging
 
-    detector = std::make_unique<OnnxDetector>();
-    auto ortPath = ToOrtPath(path);
-    detector->session = std::make_unique<Ort::Session>(GetOrtEnv(), ortPath.c_str(), options);
+        detector = std::make_unique<OnnxDetector>();
+        auto ortPath = ToOrtPath(path);
+        std::cerr << "[ONNX JNI] Creating session with path: " << ortPath << std::endl;
+        detector->session = std::make_unique<Ort::Session>(GetOrtEnv(), ortPath.c_str(), options);
+        std::cerr << "[ONNX JNI] Session created successfully" << std::endl;
 
         Ort::AllocatorWithDefaultOptions allocator;
+        std::cerr << "[ONNX JNI] Getting input count..." << std::endl;
         const size_t inputCount = detector->session->GetInputCount();
+        std::cerr << "[ONNX JNI] Input count: " << inputCount << std::endl;
+        
         for (size_t i = 0; i < inputCount; ++i) {
+            std::cerr << "[ONNX JNI] Getting input name " << i << "..." << std::endl;
             auto name = detector->session->GetInputNameAllocated(i, allocator);
+            std::cerr << "[ONNX JNI] Input " << i << " name: " << name.get() << std::endl;
             detector->inputNames.emplace_back(name.get());
         }
 
+        std::cerr << "[ONNX JNI] Getting output count..." << std::endl;
         const size_t outputCount = detector->session->GetOutputCount();
+        std::cerr << "[ONNX JNI] Output count: " << outputCount << std::endl;
+        
         for (size_t i = 0; i < outputCount; ++i) {
+            std::cerr << "[ONNX JNI] Getting output name " << i << "..." << std::endl;
             auto name = detector->session->GetOutputNameAllocated(i, allocator);
+            std::cerr << "[ONNX JNI] Output " << i << " name: " << name.get() << std::endl;
             detector->outputNames.emplace_back(name.get());
         }
 
-        auto tensorInfo =
-                detector->session->GetInputTypeInfo(0).GetTensorTypeAndShapeInfo();
-        detector->inputShapeTemplate = tensorInfo.GetShape();
+        std::cerr << "[ONNX JNI] Getting input type info..." << std::endl;
+        
+        // WORKAROUND: Skip shape introspection due to ABI incompatibility in prebuilt ONNX Runtime
+        // GetDimensionsCount() returns garbage values, indicating struct layout mismatch
+        // Use fixed dynamic shape [1, 3, -1, -1] for YOLO-style models
+        std::cerr << "[ONNX JNI] Using fixed dynamic shape due to ORT ABI issues" << std::endl;
+        detector->inputShapeTemplate = {1, 3, -1, -1};  // batch, channels, height, width
+        
+        std::cerr << "[ONNX JNI] Input shape has " << detector->inputShapeTemplate.size() << " dimensions" << std::endl;
 
+        std::cerr << "[ONNX JNI] Input shape has " << detector->inputShapeTemplate.size() << " dimensions" << std::endl;
+
+        std::cerr << "[ONNX JNI] Determining channel order..." << std::endl;
         if (detector->inputShapeTemplate.size() >= 4) {
             const int64_t dim1 = detector->inputShapeTemplate[1];
             const int64_t dimLast = detector->inputShapeTemplate[3];
+            std::cerr << "[ONNX JNI] dim1=" << dim1 << ", dimLast=" << dimLast << std::endl;
             if (dim1 == 3 || dim1 == -1) {
                 detector->channelsFirst = true;
             } else if (dimLast == 3 || dimLast == -1) {
@@ -547,18 +587,24 @@ JNIEXPORT jlong JNICALL Java_org_photonvision_onnx_OnnxJNI_create(
             } else {
                 detector->channelsFirst = dim1 <= dimLast;
             }
+            std::cerr << "[ONNX JNI] channelsFirst=" << detector->channelsFirst << std::endl;
         }
+        std::cerr << "[ONNX JNI] Detector initialization complete!" << std::endl;
     } catch (const Ort::Exception& ex) {
+        std::cerr << "[ONNX JNI] ORT Exception: " << ex.what() << std::endl;
         env->ReleaseStringUTFChars(modelPath, path);
         ThrowRuntimeException(env, ex.what());
         return 0;
     } catch (const std::exception& ex) {
+        std::cerr << "[ONNX JNI] Standard exception: " << ex.what() << std::endl;
         env->ReleaseStringUTFChars(modelPath, path);
         ThrowRuntimeException(env, ex.what());
         return 0;
     }
 
+    std::cerr << "[ONNX JNI] Releasing string and returning pointer..." << std::endl;
     env->ReleaseStringUTFChars(modelPath, path);
+    std::cerr << "[ONNX JNI] Success! Returning detector pointer" << std::endl;
     return reinterpret_cast<jlong>(detector.release());
 }
 
@@ -576,6 +622,8 @@ JNIEXPORT jobjectArray JNICALL Java_org_photonvision_onnx_OnnxJNI_detect(
         jdouble boxThresh,
     jdouble nmsThresh,
     jint expectedClassCount) {
+
+    std::cout << "[ONNX JNI] Starting detection" << std::endl;
     auto* detector = reinterpret_cast<OnnxDetector*>(handle);
     if (detector == nullptr || detector->session == nullptr) {
         ThrowRuntimeException(env, "Invalid ONNX detector instance");

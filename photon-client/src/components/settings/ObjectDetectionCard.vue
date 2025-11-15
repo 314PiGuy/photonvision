@@ -112,6 +112,41 @@ const supportedModels = computed(() => {
   return availableModels.filter(isSupported);
 });
 
+type SupportedBackend = "RKNN" | "RUBIK" | "ONNX";
+
+const importBackend = computed<SupportedBackend | null>(() => {
+  const supportedBackends = useSettingsStore().general.supportedBackends ?? [];
+  if (supportedBackends.includes("RKNN")) {
+    return "RKNN";
+  }
+  if (supportedBackends.includes("RUBIK")) {
+    return "RUBIK";
+  }
+  if (supportedBackends.includes("ONNX")) {
+    return "ONNX";
+  }
+  return null;
+});
+
+const modelFileAccept = computed(() => {
+  switch (importBackend.value) {
+    case "RKNN":
+      return ".rknn";
+    case "RUBIK":
+      return ".tflite";
+    case "ONNX":
+      return ".onnx";
+    default:
+      return "";
+  }
+});
+
+const modelVersionOptions = computed(() =>
+  importBackend.value === "RUBIK"
+    ? ["YOLOv8", "YOLO11"]
+    : ["YOLOv5", "YOLOv8", "YOLO11"]
+);
+
 const exportModels = ref();
 const openExportPrompt = () => {
   exportModels.value.click();
@@ -195,16 +230,20 @@ const handleBulkImport = () => {
             <v-card color="surface" dark>
               <v-card-title class="pb-0">Import New Object Detection Model</v-card-title>
               <v-card-text>
-                <span v-if="useSettingsStore().general.supportedBackends?.includes('RKNN')"
+                <span v-if="importBackend === 'RKNN'"
                   >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
                   640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 SOCs are
-                  currently supporter!</span
+                  currently supported!</span
                 >
-                <span v-else-if="useSettingsStore().general.supportedBackends?.includes('RUBIK')"
+                <span v-else-if="importBackend === 'RUBIK'"
                   >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
                   640x640 YOLOv8 and YOLOv11 models trained and converted to `.tflite` format for QCS6490 compatible
                   backends are currently supported!
                 </span>
+                <span v-else-if="importBackend === 'ONNX'"
+                  >Upload a new object detection model exported to `.onnx` format. Desktop builds currently support
+                  640x640 YOLOv5, YOLOv8, and YOLOv11 models produced by standard Ultralytics exporters.</span
+                >
                 <span v-else>
                   If you're seeing this, something broke; please file a ticket and tell us the details of your
                   situation.</span
@@ -214,13 +253,7 @@ const handleBulkImport = () => {
                     v-model="importModelFile"
                     variant="underlined"
                     label="Model File"
-                    :accept="
-                      useSettingsStore().general.supportedBackends?.includes('RKNN')
-                        ? '.rknn'
-                        : useSettingsStore().general.supportedBackends?.includes('RUBIK')
-                          ? '.tflite'
-                          : ''
-                    "
+                    :accept="modelFileAccept"
                   />
                   <v-text-field
                     v-model="importLabels"
@@ -235,11 +268,7 @@ const handleBulkImport = () => {
                     v-model="importVersion"
                     variant="underlined"
                     label="Model Version"
-                    :items="
-                      useSettingsStore().general.supportedBackends?.includes('RKNN')
-                        ? ['YOLOv5', 'YOLOv8', 'YOLO11']
-                        : ['YOLOv8', 'YOLO11']
-                    "
+                    :items="modelVersionOptions"
                   />
                   <v-btn
                     color="buttonActive"

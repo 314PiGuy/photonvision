@@ -67,15 +67,36 @@ def nativeFolderName = {
 
 ext.nativeLibFolder = nativeFolderName()
 ext.outputsFolder = file("${buildDir}/outputs")
+def cmakeBuildDir = file("${projectDir}/cmake_build")
+def cmakeInstallDir = file("${cmakeBuildDir}/install")
+def cmakeCommand = providers.environmentVariable("CMAKE_COMMAND").orElse("cmake")
+
+tasks.register("configureNativeBinaries", Exec) {
+    description = "Configure the ONNX JNI CMake project"
+    group = "build"
+    workingDir projectDir
+    commandLine cmakeCommand.get(), "-S", projectDir.absolutePath, "-B", cmakeBuildDir.absolutePath,
+            "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=${cmakeInstallDir}"
+}
+
+tasks.register("buildNativeBinaries", Exec) {
+    description = "Build and install the ONNX JNI native libraries"
+    group = "build"
+    dependsOn "configureNativeBinaries"
+    workingDir projectDir
+    commandLine cmakeCommand.get(), "--build", cmakeBuildDir.absolutePath,
+            "--target", "install", "--config", "Release"
+}
 
 def cmakeOutputRoots = [
-    file("${projectDir}/cmake_build/install/lib"),
-    file("${projectDir}/cmake_build/install/bin"),
-    file("${projectDir}/cmake_build/lib"),
-    file("${projectDir}/cmake_build/bin")
+    file("${cmakeInstallDir}/lib"),
+    file("${cmakeInstallDir}/bin"),
+    file("${cmakeBuildDir}/lib"),
+    file("${cmakeBuildDir}/bin")
 ]
 
 tasks.register("prepareNativeResources", Sync) {
+    dependsOn "buildNativeBinaries"
     def existingRoots = cmakeOutputRoots.findAll { it.exists() }
     onlyIf { !existingRoots.isEmpty() }
     existingRoots.each { root ->
@@ -101,7 +122,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/src/generated/**'
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**', '**/cmake_build/**'
         }
         toggleOffOn()
         googleJavaFormat()
@@ -114,7 +135,7 @@ spotless {
     groovyGradle {
         target fileTree('.') {
             include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/cmake_build/**'
         }
         greclipse()
         indentWithSpaces(4)
@@ -124,7 +145,7 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/cmake_build/**'
         }
         trimTrailingWhitespace()
         indentWithSpaces(2)
@@ -150,4 +171,10 @@ tasks.register('copyNativeLibrary', Sync) {
 
 tasks.named("build") {
     dependsOn "prepareNativeResources"
+}
+
+tasks.named("clean") {
+    doLast {
+        delete(cmakeBuildDir)
+    }
 }
