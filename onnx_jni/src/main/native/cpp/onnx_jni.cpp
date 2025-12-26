@@ -33,7 +33,12 @@
 #include <windows.h>
 #endif
 
+#include <onnxruntime_c_api.h>
 #include <onnxruntime_cxx_api.h>
+
+#if defined(_WIN32) && defined(USE_DIRECTML)
+extern "C" ORT_API_STATUS(OrtSessionOptionsAppendExecutionProvider_DML, OrtSessionOptions*, int);
+#endif
 #include <opencv2/core.hpp>
 
 namespace {
@@ -560,6 +565,26 @@ JNIEXPORT jlong JNICALL Java_org_photonvision_onnx_OnnxJNI_create(
         options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
         options.DisableMemPattern();
         options.SetLogSeverityLevel(2); // Changed to INFO level for debugging
+
+#if defined(_WIN32) && defined(USE_DIRECTML)
+        {
+            std::cerr << "[ONNX JNI] Attempting to enable DirectML provider" << std::endl;
+            OrtStatus* status = OrtSessionOptionsAppendExecutionProvider_DML(options, 0);
+            if (status != nullptr) {
+                const char* err = Ort::GetApi().GetErrorMessage(status);
+                std::string msg = "Failed to enable DirectML provider: ";
+                if (err != nullptr) {
+                    msg += err;
+                }
+                Ort::GetApi().ReleaseStatus(status);
+                std::cerr << "[ONNX JNI] " << msg << std::endl;
+                ThrowRuntimeException(env, msg.c_str());
+                env->ReleaseStringUTFChars(modelPath, path);
+                return 0;
+            }
+            std::cerr << "[ONNX JNI] DirectML provider enabled" << std::endl;
+        }
+#endif
 
         detector = std::make_unique<OnnxDetector>();
         auto ortPath = ToOrtPath(path);

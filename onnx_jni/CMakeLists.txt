@@ -5,6 +5,9 @@ project(onnx_jni LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(USE_DIRECTML "Use DirectML-enabled ONNX Runtime on Windows (nuget package)" ON)
+set(ONNXRUNTIME_URL_OVERRIDE "" CACHE STRING "Override ONNX Runtime download URL")
+
 option(ENABLE_ASAN "Enable address sanitizer" OFF)
 if(ENABLE_ASAN)
     message(STATUS "Building with AddressSanitizer enabled")
@@ -21,9 +24,21 @@ include_directories(${JNI_INCLUDE_DIRS})
 set(ONNXRUNTIME_VERSION "1.19.2")
 set(ONNXRUNTIME_URL "")
 set(ONNXRUNTIME_ARCHIVE "")
+set(ONNXRUNTIME_IS_NUGET OFF)
 
-if(WIN32)
-    set(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-win-x64-${ONNXRUNTIME_VERSION}.zip")
+if(NOT ONNXRUNTIME_URL_OVERRIDE STREQUAL "")
+    set(ONNXRUNTIME_URL "${ONNXRUNTIME_URL_OVERRIDE}")
+    set(ONNXRUNTIME_FLAVOR "CustomOverride")
+elseif(WIN32)
+    if(USE_DIRECTML)
+        # nuget for winml because the bums didnt put it on github releases
+        set(ONNXRUNTIME_URL "https://www.nuget.org/api/v2/package/Microsoft.ML.OnnxRuntime.DirectML/${ONNXRUNTIME_VERSION}")
+        set(ONNXRUNTIME_FLAVOR "DirectML")
+        set(ONNXRUNTIME_IS_NUGET ON)
+    else()
+        set(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-win-x64-${ONNXRUNTIME_VERSION}.zip")
+        set(ONNXRUNTIME_FLAVOR "CPU")
+    endif()
 elseif(APPLE)
     set(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-osx-universal2-${ONNXRUNTIME_VERSION}.tgz")
 elseif(UNIX)
@@ -39,6 +54,9 @@ endif()
 if(ONNXRUNTIME_URL STREQUAL "")
     message(FATAL_ERROR "Could not determine ONNX Runtime download URL")
 endif()
+if(WIN32)
+    message(STATUS "Using ONNX Runtime ${ONNXRUNTIME_VERSION} (${ONNXRUNTIME_FLAVOR}) from ${ONNXRUNTIME_URL}")
+endif()
 
 include(FetchContent)
 
@@ -49,8 +67,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(onnxruntime)
 
-set(ONNXRUNTIME_INCLUDE_DIR "${onnxruntime_SOURCE_DIR}/include")
-set(ONNXRUNTIME_LIB_DIR "${onnxruntime_SOURCE_DIR}/lib")
+if(ONNXRUNTIME_IS_NUGET)
+    # NuGet layout for Microsoft.ML.OnnxRuntime.DirectML
+    set(ONNXRUNTIME_INCLUDE_DIR "${onnxruntime_SOURCE_DIR}/build/native/include")
+    set(ONNXRUNTIME_LIB_DIR "${onnxruntime_SOURCE_DIR}/runtimes/win-x64/native")
+else()
+    set(ONNXRUNTIME_INCLUDE_DIR "${onnxruntime_SOURCE_DIR}/include")
+    set(ONNXRUNTIME_LIB_DIR "${onnxruntime_SOURCE_DIR}/lib")
+endif()
 
 file(GLOB ONNXRUNTIME_SHARED_LIBS
     "${ONNXRUNTIME_LIB_DIR}/*.dll"
@@ -128,6 +152,10 @@ file(GLOB_RECURSE OPENCV_RUNTIME_FILES
 find_package(Threads REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED src/main/native/cpp/onnx_jni.cpp)
+
+if(WIN32 AND USE_DIRECTML)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USE_DIRECTML)
+endif()
 
 target_include_directories(
     ${PROJECT_NAME}

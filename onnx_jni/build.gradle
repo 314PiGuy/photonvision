@@ -75,8 +75,51 @@ tasks.register("configureNativeBinaries", Exec) {
     description = "Configure the ONNX JNI CMake project"
     group = "build"
     workingDir projectDir
-    commandLine cmakeCommand.get(), "-S", projectDir.absolutePath, "-B", cmakeBuildDir.absolutePath,
-            "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=${cmakeInstallDir}"
+    
+    inputs.file("CMakeLists.txt")
+    inputs.dir("src/main/native")
+    outputs.dir(cmakeBuildDir)
+
+    doFirst {
+        cmakeBuildDir.mkdirs()
+    }
+
+    def args = [cmakeCommand.get(), "-S", projectDir.absolutePath, "-B", cmakeBuildDir.absolutePath,
+            "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=${cmakeInstallDir}"]
+    
+    def generatorEnv = providers.environmentVariable("CMAKE_GENERATOR").getOrNull()
+    if (generatorEnv) {
+        println "Using CMAKE_GENERATOR from environment: '${generatorEnv}'"
+        args.addAll(["-G", generatorEnv])
+    } else if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+        try {
+            def stdout = new ByteArrayOutputStream()
+            project.exec {
+                commandLine cmakeCommand.get(), "--help"
+                standardOutput = stdout
+            }
+            def helpOutput = stdout.toString()
+            def generators = (helpOutput =~ /Visual Studio \d+ \d+/).findAll().unique()
+            
+            if (!generators.isEmpty()) {
+                generators.sort { a, b -> 
+                    def yearA = a.split(' ').last().toInteger()
+                    def yearB = b.split(' ').last().toInteger()
+                    return yearB <=> yearA
+                }
+                def bestGenerator = generators.first()
+                println "Automatically detected Visual Studio generator: '${bestGenerator}'"
+                args.addAll(["-G", bestGenerator, "-A", "x64"])
+            } else {
+                println "No Visual Studio generator detected in 'cmake --help'. Using default generator."
+            }
+        } catch (Exception e) {
+            println "Failed to auto-detect Visual Studio generator: ${e.message}. Using default generator."
+        }
+    } else {
+        println "Using default CMake generator for ${org.gradle.internal.os.OperatingSystem.current().name}"
+    }
+    commandLine args
 }
 
 tasks.register("buildNativeBinaries", Exec) {
@@ -84,6 +127,11 @@ tasks.register("buildNativeBinaries", Exec) {
     group = "build"
     dependsOn "configureNativeBinaries"
     workingDir projectDir
+    
+    inputs.dir(cmakeBuildDir)
+    inputs.dir("src/main/native")
+    outputs.dir("${cmakeBuildDir}/install")
+
     commandLine cmakeCommand.get(), "--build", cmakeBuildDir.absolutePath,
             "--target", "install", "--config", "Release"
 }
