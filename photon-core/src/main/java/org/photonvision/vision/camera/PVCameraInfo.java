@@ -33,7 +33,8 @@ import java.util.Objects;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
+    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
+    @JsonSubTypes.Type(value = PVCameraInfo.PVMjpegCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
     /**
@@ -111,12 +112,20 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String uniquePath() {
+            //Fallback by-path -> path -> name
             return Arrays.stream(super.otherPaths)
                     .sorted() // Must sort to ensure a consistent unique path as we can get more than one
                     // by-path and their order changes at random?
                     .filter(path -> path.contains("/by-path/"))
                     .findFirst()
-                    .orElse(path());
+                    .orElseGet(() -> {
+                        // Fallback for virtual cameras or cameras without by-path
+                        if (super.path != null && !super.path.isEmpty()) {
+                            return super.path;
+                        }
+                        // Last resort: use name if path is also not useful (though path usually exists)
+                        return super.name;
+                    });
         }
 
         @Override
@@ -289,6 +298,62 @@ public sealed interface PVCameraInfo {
         }
     }
 
+    @JsonTypeName("PVMjpegCameraInfo")
+    public static final class PVMjpegCameraInfo implements PVCameraInfo {
+        public final String url;
+        public final String name;
+
+        @JsonCreator
+        public PVMjpegCameraInfo(@JsonProperty("url") String url, @JsonProperty("name") String name) {
+            this.url = url;
+            this.name = name;
+        }
+
+        @Override
+        public String path() {
+            return url;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public String uniquePath() {
+            return url;
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return new String[0];
+        }
+
+        @Override
+        public CameraType type() {
+            return CameraType.MjpegCamera;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (!(obj instanceof PVMjpegCameraInfo info)) return false;
+
+            return name.equals(info.name) && url.equals(info.url);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, url);
+        }
+
+        @Override
+        public String toString() {
+            return "PVMjpegCameraInfo[type=" + type() + ", name=" + name + ", url='" + url + "']";
+        }
+    }
+
     public static PVCameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
         return new PVUsbCameraInfo(info);
     }
@@ -299,5 +364,9 @@ public sealed interface PVCameraInfo {
 
     public static PVCameraInfo fromFileInfo(String path, String baseName) {
         return new PVFileCameraInfo(path, baseName);
+    }
+
+    public static PVCameraInfo fromMjpegInfo(String url, String name) {
+        return new PVMjpegCameraInfo(url, name);
     }
 }

@@ -8,6 +8,7 @@ import {
   type PVCSICameraInfo,
   type PVFileCameraInfo,
   type PVUsbCameraInfo,
+  type PVMjpegCameraInfo,
   type UiCameraConfiguration
 } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
@@ -69,6 +70,35 @@ const deleteThisCamera = (cameraName: string) => {
   });
 };
 
+const newCameraName = ref("");
+const newCameraUrl = ref("");
+const addingCamera = ref(false);
+
+const addMjpegCamera = () => {
+  if (addingCamera.value) return;
+  if (!newCameraName.value || !newCameraUrl.value) return;
+
+  addingCamera.value = true;
+
+  const info: PVMjpegCameraInfo = {
+    name: newCameraName.value,
+    url: newCameraUrl.value,
+    uniquePath: newCameraUrl.value
+  };
+
+  const payload = {
+    cameraInfo: {
+        PVMjpegCameraInfo: info
+    }
+  };
+
+  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload).finally(() => {
+    addingCamera.value = false;
+    newCameraName.value = "";
+    newCameraUrl.value = "";
+  });
+};
+
 const cameraConnected = (uniquePath: string): boolean => {
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
@@ -122,7 +152,7 @@ const yesDeleteMySettingsText = ref("");
 /**
  * Get the connection-type-specific camera info from the given PVCameraInfo object.
  */
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVMjpegCameraInfo | any => {
   if (!camera) return null;
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
@@ -132,6 +162,9 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
   }
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
+  }
+  if (camera.PVMjpegCameraInfo) {
+    return camera.PVMjpegCameraInfo;
   }
   return {};
 };
@@ -144,7 +177,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     return {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVMjpegCameraInfo: undefined
     };
   }
   return (
@@ -153,7 +187,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     ) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVMjpegCameraInfo: undefined
     }
   );
 };
@@ -161,6 +196,23 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
 <template>
   <div class="pa-3">
+    <v-card class="mb-4">
+      <v-card-title>Add Network Camera</v-card-title>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="5">
+            <pv-input v-model="newCameraName" label="Camera Name" />
+          </v-col>
+          <v-col cols="12" md="5">
+            <pv-input v-model="newCameraUrl" label="MJPEG Stream URL" />
+          </v-col>
+          <v-col cols="12" md="2" class="d-flex align-center">
+            <v-btn color="primary" @click="addMjpegCamera" :loading="addingCamera">Add</v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
     <v-row>
       <!-- Active modules -->
       <v-col

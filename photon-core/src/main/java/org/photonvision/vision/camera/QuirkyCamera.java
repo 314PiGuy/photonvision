@@ -37,7 +37,7 @@ public class QuirkyCamera {
                     // A laptop internal camera someone found broken
                     new QuirkyCamera(0x0bda, 0x5510, CameraQuirk.CompletelyBroken),
                     // SnapCamera on Windows
-                    new QuirkyCamera(-1, -1, "Snap Camera", CameraQuirk.CompletelyBroken),
+                    // new QuirkyCamera(-1, -1, "Snap Camera", CameraQuirk.CompletelyBroken),
                     // Mac Facetime Camera shared into Windows in Bootcamp
                     new QuirkyCamera(-1, -1, "FaceTime HD Camera", CameraQuirk.CompletelyBroken),
                     // Microsoft Lifecam
@@ -87,7 +87,9 @@ public class QuirkyCamera {
                             CameraQuirk.ArduOV9782Controls),
                     // Innomaker OV9281
                     new QuirkyCamera(
-                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls));
+                            0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls),
+                    // OBS Virtual Camera
+                    new QuirkyCamera(-1, -1, "OBS Virtual Camera", CameraQuirk.Gain)); //stupid doesnt work
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =

@@ -181,8 +181,11 @@ public class VisionRunner {
             // Grab the new camera frame
             var frame = frameSupplier.get();
 
+            boolean processedEmpty = frame.processedImage == null || frame.processedImage.getMat().empty();
+            boolean colorEmpty = frame.colorImage == null || frame.colorImage.getMat().empty();
+
             // Frame empty -- no point in trying to do anything more?
-            if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
+            if (processedEmpty && colorEmpty) {
                 // give up without increasing loop count
                 // Still feed with blank frames just dont run any pipelines
 

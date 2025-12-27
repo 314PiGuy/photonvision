@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -296,10 +297,17 @@ public class VisionSourceManager {
         List<PVCameraInfo> cameraInfos = new ArrayList<>();
         // find all connected cameras
         // cscore can return usb and csi cameras but csi are filtered out
-        Stream.of(UsbCamera.enumerateUsbCameras())
+        UsbCameraInfo[] usbCameras = UsbCamera.enumerateUsbCameras();
+        // System.out.println("DEBUG: Enumerated " + usbCameras.length + " USB cameras.");
+        // for (UsbCameraInfo info : usbCameras) {
+        //     System.out.println("DEBUG: Found camera: " + info.name + " path: " + info.path + " dev: " + info.dev);
+        // }
+
+        Stream.of(usbCameras)
                 .map(c -> PVCameraInfo.fromUsbCameraInfo(c))
                 .filter(c -> !(String.join("", c.otherPaths()).contains("csi-video")))
                 .filter(c -> !c.name().equals("unicam"))
+    
                 .forEach(cameraInfos::add);
         if (LibCameraJNILoader.getInstance().isSupported()) {
             // find all CSI cameras (Raspberry Pi cameras)
@@ -316,7 +324,7 @@ public class VisionSourceManager {
         // UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
-                .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
+                .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo || info instanceof PVCameraInfo.PVMjpegCameraInfo)
                 .forEach(cameraInfos::add);
 
         checkMismatches(cameraInfos);
@@ -503,6 +511,7 @@ public class VisionSourceManager {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
+                    case MjpegCamera -> new org.photonvision.vision.camera.MjpegVisionSource(configuration);
                 };
 
         if (source.getFrameProvider() == null) {
