@@ -143,6 +143,30 @@ public enum Platform {
         return currentPlatform.hardwareModel;
     }
 
+    public static String getNativeLibraryFolderName() {
+        switch (currentPlatform) {
+            case WINDOWS_64:
+                return "windowsx86-64";
+            case LINUX_64:
+                return "linuxx86-64";
+            case LINUX_RASPBIAN64:
+            case LINUX_RK3588_64:
+            case LINUX_QCS6490:
+            case LINUX_AARCH64:
+            case LINUX_ARM64:
+                return "linuxarm64";
+            case LINUX_RASPBIAN32:
+            case LINUX_ARM32:
+                return "linuxarm32";
+            case WINDOWS_32:
+                return "windowsx86";
+            case MACOS:
+                return "osxuniversal";
+            default:
+                throw new IllegalStateException("Unknown platform: " + currentPlatform);
+        }
+    }
+
     public static boolean isSupported() {
         return currentPlatform.isSupported;
     }

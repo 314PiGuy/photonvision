@@ -45,7 +45,7 @@ def nativeFolderName = {
     def arch = System.getProperty("os.arch").toLowerCase()
 
     if (os.isWindows()) {
-        return "winx64"
+        return "windowsx86-64"
     }
 
     if (os.isMacOsX()) {
@@ -59,7 +59,7 @@ def nativeFolderName = {
         if (arch.contains("arm")) {
             return "linuxarm32"
         }
-        return "linuxx64"
+        return "linuxx86-64"
     }
 
     return "unknown"

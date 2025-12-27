@@ -113,8 +113,6 @@ public class ObjectDetectionPipeline
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
 
-        // System.out.println("EEEEEE");
-
         CVPipeResult<List<NeuralNetworkPipeResult>> neuralNetworkResult =
                 objectDetectorPipe.run(frame.colorImage);
         sumPipeNanosElapsed += neuralNetworkResult.nanosElapsed;

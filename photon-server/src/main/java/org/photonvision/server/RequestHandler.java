@@ -669,20 +669,17 @@ public class RequestHandler {
 
             if (!testMode) {
                 ObjectDetector objDetector = null;
-                    new ModelProperties(modelPath, nickname, labels, width, height, family, version);
 
-            ObjectDetector objDetector = null;
-
-            try {
-                objDetector =
-                        switch (family) {
-                            case RUBIK -> new RubikModel(modelProperties).load();
-                            case RKNN -> new RknnModel(modelProperties).load();
-                            case ONNX -> new OnnxModel(modelProperties).load();
-                        };
-            } catch (RuntimeException e) {
-                ctx.status(400);
-                ctx.result("Failed to load object detection model: " + e.getMessage());
+                try {
+                    objDetector =
+                            switch (family) {
+                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RKNN -> new RknnModel(modelProperties).load();
+                                case ONNX -> new OnnxModel(modelProperties).load();
+                            };
+                } catch (RuntimeException e) {
+                    ctx.status(400);
+                    ctx.result("Failed to load object detection model: " + e.getMessage());
 
                     try {
                         Files.deleteIfExists(modelPath);
@@ -864,8 +861,8 @@ public class RequestHandler {
             DeleteObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
 
-            String rawPath = request.modelPath;
-            if (rawPath == null || rawPath.isBlank()) {
+            Path rawPath = request.modelPath;
+            if (rawPath == null || rawPath.toString().isBlank()) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
@@ -873,7 +870,7 @@ public class RequestHandler {
             }
 
             // The UI sends the path with a leading file: URI-like prefix.
-            String normalizedPath = rawPath;
+            String normalizedPath = rawPath.toString();
             if (normalizedPath.startsWith("file:")) {
                 normalizedPath = normalizedPath.substring("file:".length());
             }
@@ -882,7 +879,7 @@ public class RequestHandler {
                 normalizedPath = normalizedPath.substring(1);
             }
 
-            modelPath = Path.of(normalizedPath);
+            Path modelPath = Path.of(normalizedPath);
 
             if (modelPath == null) {
                 ctx.status(400);
