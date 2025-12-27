@@ -104,12 +104,10 @@ public class VisionModule {
 
         mismatch = false;
 
-        var quirks = visionSource.getCameraConfiguration().cameraQuirks;
-        if (quirks == null) {
-            quirks = QuirkyCamera.DefaultCamera;
-            visionSource.getCameraConfiguration().cameraQuirks = quirks;
-        }
-        this.cameraQuirks = quirks;
+        cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
+
+        if (visionSource.getCameraConfiguration().cameraQuirks == null)
+            visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
         // We don't show gain if the config says it's -1. So check here to make sure
         // it's non-negative if it _is_ supported

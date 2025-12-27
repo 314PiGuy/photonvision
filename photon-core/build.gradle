@@ -11,6 +11,9 @@ def nativeConfigName = 'wpilibNatives'
 configurations {
     wpilibNatives
 }
+configurations {
+    wpilibNatives
+}
 def nativeTasks = wpilibTools.createExtractionTasks {
     configurationName = nativeConfigName
 }
@@ -30,23 +33,30 @@ dependencies {
 
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
-
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
-    implementation("org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64") {
-        transitive = false
+    implementation 'com.diozero:diozero-core:1.4.1'
+
+    // The JNI libraries use wpilibNatives, the java libraries use implementation
+    if (jniPlatform == "linuxarm64") {
+        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$wpilibNativeName") {
+            transitive = false
+        }
+        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$wpilibNativeName") {
+            transitive = false
+        }
+        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$wpilibNativeName") {
+            transitive = false
+        }
     }
+
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
-    implementation("org.photonvision:rubik_jni-jni:$rubikVersion:linuxarm64") {
-        transitive = false
-    }
+
     implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
         transitive = false
     }
-    implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {
-        transitive = false
-    }
+
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$libcameraDriverVersion"
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
@@ -58,7 +68,7 @@ dependencies {
                 "osxx86-64",
                 "osxarm64"
             ])) {
-        implementation("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
             transitive = false
         }
     }

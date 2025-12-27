@@ -153,6 +153,7 @@ networktables.json
 photon-server/src/main/resources/web/*
 node_modules
 dist
+dist-ssr
 components.d.ts
 photon-server/src/main/resources/web/index.html
 .pnpm-debug.log
@@ -168,3 +169,10 @@ onnx_jni/bin/
 **/CMakeFiles/
 **/cmake_install.cmake
 onnx_jni/cmake_build/Makefile
+
+# Playwright
+photon-client/test-results/
+photon-client/playwright-report/
+photon-client/blob-report/
+photon-client/playwright/.cache/
+photon-client/playwright/.auth/
