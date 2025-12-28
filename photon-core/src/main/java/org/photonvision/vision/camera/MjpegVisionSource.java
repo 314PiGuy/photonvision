@@ -17,12 +17,22 @@
 
 package org.photonvision.vision.camera;
 
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.util.PixelFormat;
 import java.util.HashMap;
+
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.highgui.HighGui;
+import org.opencv.imgcodecs.Imgcodecs;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -45,7 +55,7 @@ public class MjpegVisionSource extends VisionSource {
     public MjpegVisionSource(CameraConfiguration config) {
         super(config);
         if (!(config.matchedCameraInfo instanceof PVMjpegCameraInfo)) {
-            throw new IllegalArgumentException("Config must be for an MJPEG camera");
+            throw new IllegalArgumentException("Config must be for an MJPEG cameraConnection");
         }
         this.info = (PVMjpegCameraInfo) config.matchedCameraInfo;
         this.frameProvider = new MjpegFrameProvider(config);
@@ -127,17 +137,48 @@ public class MjpegVisionSource extends VisionSource {
     }
 
     private static class MjpegFrameProvider extends FrameProvider {
-        private final PVMjpegCameraInfo info;
+        private final org.photonvision.vision.camera.PVCameraInfo.PVMjpegCameraInfo info;
         private final CameraConfiguration config;
-        private HttpCamera camera;
-        private CvSink cvSink;
-        private final Mat tempMat = new Mat();
+        private HttpURLConnection cameraConnection = null;
         private boolean connected = false;
         private FrameStaticProperties frameProps;
+
+
+        private InputStream in ;
+        private ByteArrayOutputStream img = new ByteArrayOutputStream();
+
+        private int prev = 0, cur;
+        private boolean capture = false;
+        private long frameCount = 0;
+    
 
         public MjpegFrameProvider(CameraConfiguration config) {
             this.config = config;
             this.info = (PVMjpegCameraInfo) config.matchedCameraInfo;
+        }
+
+        private Mat readMat() throws IOException{
+            while ((cur = in.read()) != -1) {
+                if (prev == 0xFF && cur == 0xD8) { // JPEG SOI
+                    img.reset();
+                    img.write(prev);
+                    capture = true;
+                }
+                if (capture) img.write(cur);
+
+                if (prev == 0xFF && cur == 0xD9 && capture) { // JPEG EOI
+                    byte[] jpeg = img.toByteArray();
+                    MatOfByte mob = new MatOfByte(jpeg);
+                    Mat mat = Imgcodecs.imdecode(mob, Imgcodecs.IMREAD_COLOR);
+                    mob.release();
+                    capture = false;
+                    prev = cur;
+                    return mat;
+                }
+
+                prev = cur;
+            }
+            return null;
         }
 
         @Override
@@ -148,29 +189,29 @@ public class MjpegVisionSource extends VisionSource {
                 }
             }
 
-            long result = cvSink.grabFrame(tempMat, 1.0);
-            if (result != 0) {
-                if (!tempMat.empty()) {
-                    if (frameProps == null || frameProps.imageWidth != tempMat.width() || frameProps.imageHeight != tempMat.height()) {
-                        var cal = config.calibrations.isEmpty() ? null : config.calibrations.get(0);
-                        frameProps = new FrameStaticProperties(new VideoMode(PixelFormat.kMJPEG, tempMat.width(), tempMat.height(), 30), config.FOV, cal);
-                    }
+            try {
+                Mat mat = readMat();
+                if (mat == null) {
+                    throw new IOException("Stream closed");
+                }
+                if (mat.empty()) {
+                    mat.release();
+                    return new Frame(0, null, null, FrameThresholdType.NONE, 0, null);
+                }
 
-                    CVMat cvMat = new CVMat(tempMat.clone());
-                    return new Frame(0, cvMat, null, FrameThresholdType.NONE, System.nanoTime(), frameProps);
+                if (frameProps == null || frameProps.imageWidth != mat.width() || frameProps.imageHeight != mat.height()) {
+                    var cal = config.calibrations.isEmpty() ? null : config.calibrations.get(0);
+                    frameProps = new FrameStaticProperties(new VideoMode(PixelFormat.kMJPEG, mat.width(), mat.height(), 30), config.FOV, cal);
                 }
-            } else {
+                System.out.println("Got MJPEG frame: " + mat.size());
+                return new Frame(frameCount++, new CVMat(mat), new CVMat(mat.clone()), FrameThresholdType.NONE, System.nanoTime(), frameProps);
+            } catch (Exception e) {
                 // Error grabbing frame
-                String error = cvSink.getError();
-                logger.error("Error grabbing frame from MJPEG stream: " + error);
+                logger.error("Error grabbing frame from MJPEG stream", e);
                 connected = false;
-                if (camera != null) {
-                    camera.close();
-                    camera = null;
-                }
-                if (cvSink != null) {
-                    cvSink.close();
-                    cvSink = null;
+                if (cameraConnection != null) {
+                    cameraConnection.disconnect();
+                    cameraConnection = null;
                 }
             }
             return new Frame(0, null, null, FrameThresholdType.NONE, 0, null);
@@ -186,24 +227,17 @@ public class MjpegVisionSource extends VisionSource {
             if (connected) return true;
             try {
                 logger.info("Attempting to connect to MJPEG stream: " + info.url);
-                
-                if (camera == null) {
-                    camera = new HttpCamera(info.name, info.url);
-                }
-                if (cvSink == null) {
-                    cvSink = new CvSink("MjpegSink");
-                    cvSink.setSource(camera);
-                    cvSink.setEnabled(true);
+                if (cameraConnection == null) {
+                    HttpURLConnection conn = (HttpURLConnection) new URL(info.url).openConnection();
+                    conn.setRequestProperty("User-Agent", "Java");
+                    conn.connect();
+                    cameraConnection = conn;
+                    in = new BufferedInputStream(cameraConnection.getInputStream());
+                    System.out.println("Connected to MJPEG stream");
+                    connected = true;
+                    onCameraConnected();
                 }
 
-                if (camera.isValid()) {
-                    connected = true;
-                    logger.info("Connected to MJPEG stream!");
-                    onCameraConnected();
-                    return true;
-                } else {
-                    logger.error("Failed to open MJPEG stream (isValid=false): " + info.url);
-                }
             } catch (Exception e) {
                 logger.error("Failed to connect to MJPEG stream", e);
             }
@@ -229,13 +263,9 @@ public class MjpegVisionSource extends VisionSource {
 
         @Override
         public void release() {
-            if (camera != null) {
-                camera.close();
+            if (cameraConnection != null) {
+                cameraConnection.disconnect();
             }
-            if (cvSink != null) {
-                cvSink.close();
-            }
-            tempMat.release();
-        }
+            connected = false;}
     }
 }

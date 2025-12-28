@@ -80,7 +80,7 @@ public class VisionModule {
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     private final StatusLEDConsumer statusLEDsConsumer;
-    protected final QuirkyCamera cameraQuirks;
+    protected QuirkyCamera cameraQuirks;
 
     protected TrackedTarget lastPipelineResultBestTarget;
 
@@ -105,6 +105,10 @@ public class VisionModule {
         mismatch = false;
 
         cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
+        if (cameraQuirks == null) {
+            logger.warn("Camera quirks was null; setting to default");
+            cameraQuirks = QuirkyCamera.DefaultCamera;
+        }
 
         if (visionSource.getCameraConfiguration().cameraQuirks == null)
             visionSource.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;

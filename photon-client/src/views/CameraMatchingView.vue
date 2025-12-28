@@ -16,6 +16,7 @@ import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
