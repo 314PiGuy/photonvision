@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -49,35 +48,72 @@ public class ObjectDetectionPipeline
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
+    // Cache the last selected model and params so we don't recreate detectors every frame
+    private static final org.photonvision.common.logging.Logger logger =
+            new org.photonvision.common.logging.Logger(
+                    ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule);
+    private org.photonvision.vision.objects.Model lastSelectedModel =
+            org.photonvision.vision.objects.NullModel.getInstance();
+    private double lastConfidence = -1.0;
+    private double lastNms = -1.0;
+
     public ObjectDetectionPipeline() {
         super(PROCESSING_TYPE);
         settings = new ObjectDetectionPipelineSettings();
+        new org.photonvision.common.logging.Logger(ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule).debug(
+                () -> "Constructed ObjectDetectionPipeline instance: " + System.identityHashCode(this));
     }
 
     public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+        new org.photonvision.common.logging.Logger(ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule).debug(
+                () -> "Constructed ObjectDetectionPipeline instance: " + System.identityHashCode(this));
     }
 
     @Override
     protected void setPipeParamsImpl() {
-        Optional<Model> selectedModel =
-                settings.model != null
-                        ? NeuralNetworkModelManager.getInstance()
-                                .getModel(settings.model.modelPath().toString())
-                        : Optional.empty();
+        Optional<Model> selectedModel = Optional.empty();
 
-        // If the desired model couldn't be found, log an error and try to use the default model
+        if (settings.model != null) {
+            if (settings.model.modelPath() != null) {
+                try {
+                    selectedModel =
+                            NeuralNetworkModelManager.getInstance()
+                                    .getModel(settings.model.modelPath().toString());
+                } catch (Exception e) {
+                    logger.warn("Error looking up model by path: " + e.getMessage());
+                    selectedModel = Optional.empty();
+                }
+            } else {
+                logger.debug(
+                        "ModelProperties present but modelPath is null; using default model or NullModel");
+            }
+        }
+
+        // If the desired model couldn't be found, try to use the default model
         if (selectedModel.isEmpty()) {
             selectedModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
         }
 
         // If the model remains empty, use the NullModel
-        if (selectedModel.isEmpty()) {
-            selectedModel = Optional.of(NullModel.getInstance());
+        Model modelToUse = selectedModel.orElse(NullModel.getInstance());
+
+        // Only update object detector params when something meaningful changed to avoid creating
+        // detectors repeatedly
+        if (modelToUse != lastSelectedModel
+                || settings.confidence != lastConfidence
+                || settings.nms != lastNms) {
+            new org.photonvision.common.logging.Logger(ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule).debug(() ->
+                    "Updating detector params on pipeline instance " + System.identityHashCode(this) +
+                            " to model=" + (modelToUse == null ? "null" : modelToUse.getUID()) +
+                            " conf=" + settings.confidence + " nms=" + settings.nms);
+            objectDetectorPipe.setParams(
+                    new ObjectDetectionPipeParams(settings.confidence, settings.nms, modelToUse));
+            lastSelectedModel = modelToUse;
+            lastConfidence = settings.confidence;
+            lastNms = settings.nms;
         }
-        objectDetectorPipe.setParams(
-                new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get()));
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
@@ -133,8 +169,13 @@ public class ObjectDetectionPipeline
                 collect2dTargetsPipe.run(sortContoursResult.output);
         sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
+        // Debug: log the intermediate NN output and final target counts
+        logger.debug(() -> "NN results size=" + neuralNetworkResult.output.size() + " | filtered shapes=" + filterContoursResult.output.size() + " | targets=" + collect2dTargetsResult.output.size());
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
+
+        logger.debug(() -> "Returning pipeline result with " + collect2dTargetsResult.output.size() + " targets and classNames=" + names);
 
         return new CVPipelineResult(
                 frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);

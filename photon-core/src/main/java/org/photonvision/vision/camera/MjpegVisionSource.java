@@ -19,20 +19,16 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.util.PixelFormat;
-import java.util.HashMap;
-
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.highgui.HighGui;
-import org.opencv.imgcodecs.Imgcodecs;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+import java.util.HashMap;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -80,10 +76,14 @@ public class MjpegVisionSource extends VisionSource {
             public void setExposureRaw(double exposureRaw) {}
 
             @Override
-            public double getMinExposureRaw() { return 0; }
+            public double getMinExposureRaw() {
+                return 0;
+            }
 
             @Override
-            public double getMaxExposureRaw() { return 100; }
+            public double getMaxExposureRaw() {
+                return 100;
+            }
 
             @Override
             public void setAutoExposure(boolean cameraAutoExposure) {}
@@ -109,10 +109,14 @@ public class MjpegVisionSource extends VisionSource {
             public void setVideoModeInternal(VideoMode videoMode) {}
 
             @Override
-            public double getMinWhiteBalanceTemp() { return 0; }
+            public double getMinWhiteBalanceTemp() {
+                return 0;
+            }
 
             @Override
-            public double getMaxWhiteBalanceTemp() { return 10000; }
+            public double getMaxWhiteBalanceTemp() {
+                return 10000;
+            }
         };
     }
 
@@ -143,21 +147,19 @@ public class MjpegVisionSource extends VisionSource {
         private boolean connected = false;
         private FrameStaticProperties frameProps;
 
-
-        private InputStream in ;
+        private InputStream in;
         private ByteArrayOutputStream img = new ByteArrayOutputStream();
 
         private int prev = 0, cur;
         private boolean capture = false;
         private long frameCount = 0;
-    
 
         public MjpegFrameProvider(CameraConfiguration config) {
             this.config = config;
             this.info = (PVMjpegCameraInfo) config.matchedCameraInfo;
         }
 
-        private Mat readMat() throws IOException{
+        private Mat readMat() throws IOException {
             while ((cur = in.read()) != -1) {
                 if (prev == 0xFF && cur == 0xD8) { // JPEG SOI
                     img.reset();
@@ -199,12 +201,24 @@ public class MjpegVisionSource extends VisionSource {
                     return new Frame(0, null, null, FrameThresholdType.NONE, 0, null);
                 }
 
-                if (frameProps == null || frameProps.imageWidth != mat.width() || frameProps.imageHeight != mat.height()) {
+                if (frameProps == null
+                        || frameProps.imageWidth != mat.width()
+                        || frameProps.imageHeight != mat.height()) {
                     var cal = config.calibrations.isEmpty() ? null : config.calibrations.get(0);
-                    frameProps = new FrameStaticProperties(new VideoMode(PixelFormat.kMJPEG, mat.width(), mat.height(), 30), config.FOV, cal);
+                    frameProps =
+                            new FrameStaticProperties(
+                                    new VideoMode(PixelFormat.kMJPEG, mat.width(), mat.height(), 30),
+                                    config.FOV,
+                                    cal);
                 }
                 System.out.println("Got MJPEG frame: " + mat.size());
-                return new Frame(frameCount++, new CVMat(mat), new CVMat(mat.clone()), FrameThresholdType.NONE, System.nanoTime(), frameProps);
+                return new Frame(
+                        frameCount++,
+                        new CVMat(mat),
+                        new CVMat(mat.clone()),
+                        FrameThresholdType.NONE,
+                        System.nanoTime(),
+                        frameProps);
             } catch (Exception e) {
                 // Error grabbing frame
                 logger.error("Error grabbing frame from MJPEG stream", e);
@@ -266,6 +280,7 @@ public class MjpegVisionSource extends VisionSource {
             if (cameraConnection != null) {
                 cameraConnection.disconnect();
             }
-            connected = false;}
+            connected = false;
+        }
     }
 }

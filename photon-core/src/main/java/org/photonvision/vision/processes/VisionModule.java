@@ -255,11 +255,12 @@ public class VisionModule {
                 this.settings = settings;
                 this.targets = targets;
 
-                shouldRun = inputOutputFrame != null
-                && inputOutputFrame.colorImage != null
-                && !inputOutputFrame.colorImage.getMat().empty()
-                && inputOutputFrame.processedImage != null
-                && !inputOutputFrame.processedImage.getMat().empty();
+                shouldRun =
+                        inputOutputFrame != null
+                                && inputOutputFrame.colorImage != null
+                                && !inputOutputFrame.colorImage.getMat().empty()
+                                && inputOutputFrame.processedImage != null
+                                && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 

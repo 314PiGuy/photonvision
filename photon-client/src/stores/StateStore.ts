@@ -47,6 +47,12 @@ interface StateStore {
   };
 
   vsmState: VsmState;
+  nodeFrame?: {
+    cameraUniqueName?: string;
+    path?: number[];
+    status?: string;
+    imageBase64?: string;
+  };
 }
 
 export const useStateStore = defineStore("state", {
@@ -98,7 +104,8 @@ export const useStateStore = defineStore("state", {
       vsmState: {
         allConnectedCameras: [],
         disabledConfigs: []
-      }
+      },
+      nodeFrame: undefined
     };
   },
   getters: {
@@ -161,6 +168,14 @@ export const useStateStore = defineStore("state", {
     },
     updateDiscoveredCameras(data: VsmState) {
       this.vsmState = data;
+    },
+    updateNodeFrameFromWebsocket(data: { cameraUniqueName?: string; path?: number[]; status?: string; image_base64?: string }) {
+      this.nodeFrame = {
+        cameraUniqueName: data.cameraUniqueName,
+        path: data.path,
+        status: data.status,
+        imageBase64: data.image_base64
+      };
     },
     showSnackbarMessage(data: {
       message: string;

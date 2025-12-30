@@ -107,6 +107,12 @@ export interface IncomingWebsocketData {
   cameraUniqueName?: string; // Sent when mutating pipeline settings to check against currently active
   calibrationData?: WebsocketCalibrationData;
   visionSourceManager?: VsmState;
+  nodeFrame?: {
+    cameraUniqueName?: string;
+    path?: number[];
+    status?: string;
+    image_base64?: string;
+  };
 }
 
 export enum WebsocketPipelineType {
@@ -117,5 +123,7 @@ export enum WebsocketPipelineType {
   ColoredShape = 1,
   AprilTag = 2,
   Aruco = 3,
-  ObjectDetection = 4
+  ObjectDetection = 4,
+  Sequential = 5,
+  Parallel = 6
 }

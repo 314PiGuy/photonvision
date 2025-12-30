@@ -301,14 +301,14 @@ public class VisionSourceManager {
         UsbCameraInfo[] usbCameras = UsbCamera.enumerateUsbCameras();
         // System.out.println("DEBUG: Enumerated " + usbCameras.length + " USB cameras.");
         // for (UsbCameraInfo info : usbCameras) {
-        //     System.out.println("DEBUG: Found camera: " + info.name + " path: " + info.path + " dev: " + info.dev);
+        //     System.out.println("DEBUG: Found camera: " + info.name + " path: " + info.path + " dev: "
+        // + info.dev);
         // }
 
         Stream.of(usbCameras)
                 .map(c -> PVCameraInfo.fromUsbCameraInfo(c))
                 .filter(c -> !(String.join("", c.otherPaths()).contains("csi-video")))
                 .filter(c -> !c.name().equals("unicam"))
-    
                 .forEach(cameraInfos::add);
         if (LoadJNI.hasLoaded(JNITypes.LIBCAMERA)) {
             // find all CSI cameras (Raspberry Pi cameras)
@@ -325,7 +325,10 @@ public class VisionSourceManager {
         // UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
-                .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo || info instanceof PVCameraInfo.PVMjpegCameraInfo)
+                .filter(
+                        info ->
+                                info instanceof PVCameraInfo.PVFileCameraInfo
+                                        || info instanceof PVCameraInfo.PVMjpegCameraInfo)
                 .forEach(cameraInfos::add);
 
         checkMismatches(cameraInfos);

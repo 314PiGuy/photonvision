@@ -112,20 +112,21 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String uniquePath() {
-            //Fallback by-path -> path -> name
+            // Fallback by-path -> path -> name
             return Arrays.stream(super.otherPaths)
                     .sorted() // Must sort to ensure a consistent unique path as we can get more than one
                     // by-path and their order changes at random?
                     .filter(path -> path.contains("/by-path/"))
                     .findFirst()
-                    .orElseGet(() -> {
-                        // Fallback for virtual cameras or cameras without by-path
-                        if (super.path != null && !super.path.isEmpty()) {
-                            return super.path;
-                        }
-                        // Last resort: use name if path is also not useful (though path usually exists)
-                        return super.name;
-                    });
+                    .orElseGet(
+                            () -> {
+                                // Fallback for virtual cameras or cameras without by-path
+                                if (super.path != null && !super.path.isEmpty()) {
+                                    return super.path;
+                                }
+                                // Last resort: use name if path is also not useful (though path usually exists)
+                                return super.name;
+                            });
         }
 
         @Override

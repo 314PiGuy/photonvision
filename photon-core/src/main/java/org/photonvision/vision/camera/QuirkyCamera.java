@@ -89,7 +89,7 @@ public class QuirkyCamera {
                     new QuirkyCamera(
                             0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls),
                     // OBS Virtual Camera
-                    new QuirkyCamera(-1, -1, "OBS Virtual Camera", CameraQuirk.Gain)); //stupid doesnt work
+                    new QuirkyCamera(-1, -1, "OBS Virtual Camera", CameraQuirk.Gain)); // stupid doesnt work
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =

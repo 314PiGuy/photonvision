@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 import org.opencv.core.Mat;
 import org.opencv.core.Rect2d;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -77,13 +76,7 @@ public final class OnnxSingleImageRunner {
 
         ModelProperties properties =
                 new ModelProperties(
-                        modelPath,
-                        nickname,
-                        labels,
-                        inputWidth,
-                        inputHeight,
-                        Family.ONNX,
-                        Version.YOLOV8);
+                        modelPath, nickname, labels, inputWidth, inputHeight, Family.ONNX, Version.YOLOV8);
 
         OnnxObjectDetector detector = null;
         Mat image = new Mat();
@@ -96,8 +89,7 @@ public final class OnnxSingleImageRunner {
                 throw new IllegalArgumentException("Failed to read image " + imagePath);
             }
 
-            List<NeuralNetworkPipeResult> detections =
-                    detector.detect(image, nmsThreshold, boxThreshold);
+            List<NeuralNetworkPipeResult> detections = detector.detect(image, nmsThreshold, boxThreshold);
 
             System.out.printf(Locale.US, "Total detections: %d%n", detections.size());
             for (int i = 0; i < detections.size(); i++) {

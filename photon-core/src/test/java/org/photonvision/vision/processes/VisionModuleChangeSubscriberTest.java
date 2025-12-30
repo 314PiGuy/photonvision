@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.photonvision.vision.processes.VisionModuleChangeSubscriber.setProperty;
 
 import java.util.ArrayList;
@@ -146,5 +147,78 @@ public class VisionModuleChangeSubscriberTest {
         TestClass obj = new TestClass();
         Executable executable = () -> setProperty(obj, "doubleField", "string");
         assertThrows(Exception.class, executable);
+    }
+
+    @Test
+    void testSetSourceCameraAndPipelineEnvelope() throws Exception {
+        org.photonvision.vision.pipeline.SequentialPipelineSettings seq =
+                new org.photonvision.vision.pipeline.SequentialPipelineSettings();
+
+        java.util.Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("children", new java.util.ArrayList<Object>());
+        payload.put("type", "Parallel");
+
+        // Set the sourceCamera via special-case
+        setProperty(seq, "sourceCamera", "Cam1");
+        assertEquals("Cam1", seq.sourceCamera);
+
+        // Apply an envelope to set pipeline type and children
+        setProperty(seq, "pipeline", payload);
+        assertEquals(org.photonvision.vision.pipeline.PipelineType.Parallel, seq.pipelineType);
+    }
+
+    @Test
+    void testResolveModelShorthand() throws Exception {
+        // Build a payload similar to the UI-imported format
+        var payload = new java.util.HashMap<String, Object>();
+        var pipeline = new java.util.HashMap<String, Object>();
+        var childPayload = new java.util.HashMap<String, Object>();
+        var modelMap = new java.util.HashMap<String, Object>();
+        modelMap.put("name", "yolo11n_640");
+        modelMap.put("backend", "ONNX");
+        childPayload.put("model", modelMap);
+        var childWrapper = java.util.Arrays.asList("Object Detection", childPayload);
+        pipeline.put("type", "Parallel");
+        pipeline.put("children", java.util.Arrays.asList(childWrapper));
+        payload.put("pipeline", pipeline);
+
+        // Add a fake model property into the config so the resolver can find it
+        var conf = new org.photonvision.common.configuration.PhotonConfiguration();
+        var nnpm = new org.photonvision.common.configuration.NeuralNetworkPropertyManager();
+        var labels = new java.util.LinkedList<String>();
+        labels.add("person");
+        var mp = new org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties(
+                java.nio.file.Path.of("/models/yolo11n_640.onnx"),
+                "yolo11n_640",
+                labels,
+                640,
+                640,
+                org.photonvision.common.configuration.NeuralNetworkModelManager.Family.ONNX,
+                org.photonvision.common.configuration.NeuralNetworkModelManager.Version.YOLOV11);
+        nnpm.addModelProperties(mp);
+        conf.setNeuralNetworkProperties(nnpm);
+
+        // Inject the config into the SqlConfigProvider used by ConfigManager
+        var cm = org.photonvision.common.configuration.ConfigManager.getInstance();
+        // Use reflection to set the private provider.config to our test config
+        java.lang.reflect.Field providerField = org.photonvision.common.configuration.ConfigManager.class.getDeclaredField("m_provider");
+        providerField.setAccessible(true);
+        var provider = providerField.get(cm);
+        java.lang.reflect.Method setConfigMethod = provider.getClass().getMethod("setConfig", org.photonvision.common.configuration.PhotonConfiguration.class);
+        setConfigMethod.invoke(provider, conf);
+
+        // Run normalization
+        org.photonvision.vision.processes.VisionModuleChangeSubscriber.normalizeModelShorthandInPipelinePayload(payload);
+
+        // Verify that the nested model map now contains modelPath
+        var children = ((java.util.Map) payload.get("pipeline")).get("children");
+        var child = ((java.util.List) children).get(0);
+        var inner = (java.util.List) child;
+        var pl = (java.util.Map) inner.get(1);
+        var model = (java.util.Map) pl.get("model");
+        assertTrue(model.containsKey("modelPath"));
+        assertEquals("/models/yolo11n_640.onnx", model.get("modelPath"));
+
+
     }
 }

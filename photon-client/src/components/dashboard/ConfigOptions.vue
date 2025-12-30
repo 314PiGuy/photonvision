@@ -13,6 +13,8 @@ import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
+import CustomPipelineTab from "@/components/dashboard/tabs/CustomPipelineTab.vue";
+import PipelineVisualizer from "@/components/dashboard/PipelineVisualizer.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useDisplay } from "vuetify/lib/composables/display";
 import { useTheme } from "vuetify";
@@ -34,7 +36,8 @@ const allTabs = Object.freeze({
   outputTab: { tabName: "Output", component: OutputTab },
   targetsTab: { tabName: "Targets", component: TargetsTab },
   pnpTab: { tabName: "PnP", component: PnPTab },
-  map3dTab: { tabName: "3D", component: Map3DTab }
+  map3dTab: { tabName: "3D", component: Map3DTab },
+  customTab: { tabName: "Custom", component: CustomPipelineTab }
 });
 
 const selectedTabs = ref([0, 0, 0, 0]);
@@ -80,6 +83,16 @@ const getTabGroups = (): ConfigOption[][] => {
 
   return [];
 };
+const isCustomTop = computed(() => {
+  const raw = useCameraSettingsStore().currentPipelineSettings as any;
+  const hasChildrenTop = raw && Array.isArray(raw.children);
+  return (
+    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Sequential ||
+    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Parallel ||
+    hasChildrenTop
+  );
+});
+
 const tabGroups = computed<ConfigOption[][]>(() => {
   // Just return the input tab because we know that is always the case in driver mode
   if (useCameraSettingsStore().isDriverMode) return [[allTabs.inputTab]];
@@ -89,6 +102,48 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
   const isObjectDetection =
     useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
+  // Determine if the current pipeline is a custom JSON-configured one. Check both the websocket pipeline type
+  // and whether the settings include a `children` array (more robust against mismatched type encodings).
+  const rawSettings: any = useCameraSettingsStore().currentPipelineSettings;
+  const hasChildren = rawSettings && Array.isArray(rawSettings.children);
+  const isCustom =
+    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Sequential ||
+    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Parallel ||
+    hasChildren;
+
+  // Expose for template usage
+  const showVisualizer = isCustom;
+
+  // If a custom JSON pipeline is selected, only show Input, Custom, and Output tabs
+  if (isCustom) {
+    // Some custom pipelines may include children that produce targets (e.g. AprilTag, ArUco, ObjectDetection).
+    // Detect those and include the Targets tab so users can still view detections.
+    const childProducesTargets = (child: any) => {
+      if (!child) return false;
+      // Wrapper-array polymorphic form: ["TypeName", { ... }]
+      if (Array.isArray(child) && typeof child[0] === "string") {
+        const typeName: string = child[0];
+        // Accept common variations like "Object Detection" or "ObjectDetection"
+        return /AprilTag|Aruco|ObjectDetection|Object Detection/i.test(typeName);
+      }
+      // Heuristic checks on object form
+      if (child.tagFamily !== undefined) return true; // AprilTag
+      if (child.dictionary !== undefined) return true; // ArUco
+      if (child.model !== undefined || child.minConfidence !== undefined || child.classNames !== undefined) return true; // ObjectDetection
+      return false;
+    };
+
+    const showTargets = hasChildren && rawSettings.children.some((c: any) => childProducesTargets(c));
+
+    // Reset selected tab indices so the Custom tab is visible and selected
+    selectedTabs.value = [0];
+
+    const tabs = [allTabs.inputTab, allTabs.customTab];
+    if (showTargets) tabs.push(allTabs.targetsTab);
+    tabs.push(allTabs.outputTab);
+
+    return [tabs];
+  }
 
   return getTabGroups()
     .map((tabGroup) =>
@@ -100,7 +155,8 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
           !(!isAruco && tabConfig.tabName === "ArUco") &&
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out ArUco unless we actually are doing ArUco
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection") && //Filter out ArUco unless we actually are doing ArUco
+          !(tabConfig.tabName === "Custom" && !isCustom) // Hide Custom tab unless the pipeline is custom
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
@@ -144,7 +200,15 @@ const onBeforeTabUpdate = () => {
               <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
             </KeepAlive>
           </div>
+
+          <!-- Show pipeline visualizer under the tabs for custom pipelines so it doesn't overlap the Targets pane -->
+          <div v-if="showVisualizer" style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.04)">
+            <PipelineVisualizer />
+          </div>
         </v-card>
+
+        <!-- If pipeline is a top-level custom one, we intentionally do not show a second visualizer
+             here to avoid duplication; visualizer is shown inside the card when relevant -->
       </v-col>
     </template>
   </v-row>

@@ -77,10 +77,7 @@ public abstract class PhotonJNICommon {
                             logger.info("Created symlink: " + symlinkTarget.getName() + " -> " + temp.getName());
                         } catch (Exception linkEx) {
                             logger.warn(
-                                    "Failed to create symlink for "
-                                            + nativeLibName
-                                            + ": "
-                                            + linkEx.getMessage());
+                                    "Failed to create symlink for " + nativeLibName + ": " + linkEx.getMessage());
                         }
                     }
                 }

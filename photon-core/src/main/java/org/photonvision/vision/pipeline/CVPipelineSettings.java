@@ -17,29 +17,20 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.WRAPPER_ARRAY,
-        property = "type")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = ColoredShapePipelineSettings.class),
-    @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
-    @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
-    @JsonSubTypes.Type(value = AprilTagPipelineSettings.class),
-    @JsonSubTypes.Type(value = ArucoPipelineSettings.class),
-    @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class)
-})
+// Removed polymorphic type annotations to avoid wrapper-array/property polymorphic formats.
+// JSON for pipeline settings is expected to be a plain object matching the concrete
+// settings class fields (the UI/client code handles indicating concrete types).
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
     @SuppressSettingCopy public PipelineType pipelineType = PipelineType.DriverMode;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
+    // Optional label specifying the intended source camera when a pipeline is imported or stored
+    public String sourceCamera = null;
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
     public double cameraExposureRaw = 20;
@@ -149,6 +140,8 @@ public class CVPipelineSettings implements Cloneable {
                 + inputShouldShow
                 + ", outputShouldShow="
                 + outputShouldShow
+                + ", sourceCamera="
+                + sourceCamera
                 + '}';
     }
 }

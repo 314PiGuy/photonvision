@@ -38,7 +38,8 @@ public enum DataSocketMessageType {
     SMT_DUPLICATEPIPELINE("duplicatePipeline"),
     SMT_CHANGEBRIGHTNESS("enabledLEDPercentage"),
     SMT_ROBOTOFFSETPOINT("robotOffsetPoint"),
-    SMT_CHANGEPIPELINETYPE("pipelineType");
+    SMT_CHANGEPIPELINETYPE("pipelineType"),
+    SMT_IMPORTPIPELINE("importPipeline");
 
     public final String entryKey;
 

@@ -10,7 +10,9 @@ export enum PipelineType {
   ColoredShape = 4,
   AprilTag = 5,
   Aruco = 6,
-  ObjectDetection = 7
+  ObjectDetection = 7,
+  Sequential = 8,
+  Parallel = 9
 }
 
 export enum AprilTagFamily {
@@ -324,6 +326,16 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
 export interface Calibration3dPipelineSettings extends PipelineSettings {
   drawAllSnapshots: boolean;
 }
+
+export interface SequentialPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Sequential;
+  children: any[];
+}
+
+export interface ParallelPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Parallel;
+  children: any[];
+}
 export type ConfigurableCalibration3dPipelineSettings = Partial<Omit<Calibration3dPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
 export const DefaultCalibration3dPipelineSettings: Calibration3dPipelineSettings = {
@@ -343,7 +355,9 @@ export type ActivePipelineSettings =
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
   | ObjectDetectionPipelineSettings
-  | Calibration3dPipelineSettings;
+  | Calibration3dPipelineSettings
+  | SequentialPipelineSettings
+  | ParallelPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
   | ConfigurableReflectivePipelineSettings
@@ -351,4 +365,6 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
-  | ConfigurableCalibration3dPipelineSettings;
+  | ConfigurableCalibration3dPipelineSettings
+  | Partial<SequentialPipelineSettings>
+  | Partial<ParallelPipelineSettings>;

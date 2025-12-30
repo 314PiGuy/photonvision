@@ -45,6 +45,9 @@ if (!is_demo) {
       if (data.visionSourceManager !== undefined) {
         useStateStore().updateDiscoveredCameras(data.visionSourceManager);
       }
+      if (data.nodeFrame !== undefined) {
+        useStateStore().updateNodeFrameFromWebsocket(data.nodeFrame);
+      }
     },
     () => {
       useStateStore().$patch({ backendConnected: false });

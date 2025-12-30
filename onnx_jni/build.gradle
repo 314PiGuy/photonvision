@@ -75,7 +75,7 @@ tasks.register("configureNativeBinaries", Exec) {
     description = "Configure the ONNX JNI CMake project"
     group = "build"
     workingDir projectDir
-    
+
     inputs.file("CMakeLists.txt")
     inputs.dir("src/main/native")
     outputs.dir(cmakeBuildDir)
@@ -84,9 +84,16 @@ tasks.register("configureNativeBinaries", Exec) {
         cmakeBuildDir.mkdirs()
     }
 
-    def args = [cmakeCommand.get(), "-S", projectDir.absolutePath, "-B", cmakeBuildDir.absolutePath,
-            "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=${cmakeInstallDir}"]
-    
+    def args = [
+        cmakeCommand.get(),
+        "-S",
+        projectDir.absolutePath,
+        "-B",
+        cmakeBuildDir.absolutePath,
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=${cmakeInstallDir}"
+    ]
+
     def generatorEnv = providers.environmentVariable("CMAKE_GENERATOR").getOrNull()
     if (generatorEnv) {
         println "Using CMAKE_GENERATOR from environment: '${generatorEnv}'"
@@ -100,16 +107,21 @@ tasks.register("configureNativeBinaries", Exec) {
             }
             def helpOutput = stdout.toString()
             def generators = (helpOutput =~ /Visual Studio \d+ \d+/).findAll().unique()
-            
+
             if (!generators.isEmpty()) {
-                generators.sort { a, b -> 
+                generators.sort { a, b ->
                     def yearA = a.split(' ').last().toInteger()
                     def yearB = b.split(' ').last().toInteger()
                     return yearB <=> yearA
                 }
                 def bestGenerator = generators.first()
                 println "Automatically detected Visual Studio generator: '${bestGenerator}'"
-                args.addAll(["-G", bestGenerator, "-A", "x64"])
+                args.addAll([
+                    "-G",
+                    bestGenerator,
+                    "-A",
+                    "x64"
+                ])
             } else {
                 println "No Visual Studio generator detected in 'cmake --help'. Using default generator."
             }
@@ -127,7 +139,7 @@ tasks.register("buildNativeBinaries", Exec) {
     group = "build"
     dependsOn "configureNativeBinaries"
     workingDir projectDir
-    
+
     inputs.dir(cmakeBuildDir)
     inputs.dir("src/main/native")
     outputs.dir("${cmakeBuildDir}/install")

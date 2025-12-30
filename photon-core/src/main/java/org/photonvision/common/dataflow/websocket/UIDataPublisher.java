@@ -82,6 +82,7 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             dataMap.put("focus", focusResult.focus);
         }
 
+        logger.debug("Publishing updatePipelineResult for " + uniqueName + " targets=" + uiTargets.size());
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));
         lastUIResultUpdateTime = now;

@@ -222,9 +222,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       settings: Partial<ActivePipelineSettings>,
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
-      Object.entries(settings).forEach(([k, v]) => {
-        this.cameras[cameraUniqueName].pipelineSettings[k] = v;
-      });
+      // Use immutable update so reactivity reliably picks up changes
+      const existing = this.cameras[cameraUniqueName];
+      if (!existing) return;
+      const newPipelineSettings = { ...existing.pipelineSettings, ...(settings as Partial<typeof existing.pipelineSettings>) };
+      const newCamera = { ...existing, pipelineSettings: newPipelineSettings };
+      this.cameras = { ...this.cameras, [cameraUniqueName]: newCamera };
     },
     /**
      * Change the nickname of the currently selected pipeline of the provided camera.
@@ -243,7 +246,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraUniqueName: cameraUniqueName
       };
       if (updateStore) {
-        this.cameras[cameraUniqueName].pipelineSettings.pipelineNickname = newName;
+        const existing = this.cameras[cameraUniqueName];
+        if (existing) {
+          const newPipelineSettings = { ...existing.pipelineSettings, pipelineNickname: newName };
+          const newCamera = { ...existing, pipelineSettings: newPipelineSettings };
+          this.cameras = { ...this.cameras, [cameraUniqueName]: newCamera };
+        }
       }
       useStateStore().websocket?.send(payload, true);
     },
@@ -255,14 +263,42 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      */
     changeCurrentPipelineType(
       type: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraUniqueName: string = useStateStore().currentCameraUniqueName,
+      updateStore = true
     ) {
       const payload = {
         pipelineType: type,
         cameraUniqueName: cameraUniqueName
       };
+
+      // Optimistically update the store so UI reflects the selection immediately.
+      // Use immutable update so reactivity picks up the change reliably.
+      if (updateStore) {
+        try {
+          const existing = this.cameras[cameraUniqueName];
+          if (existing) {
+            const newSettings = {
+              ...existing,
+              pipelineSettings: {
+                ...existing.pipelineSettings,
+                pipelineType: (type + 3) as PipelineType
+              }
+            };
+            this.cameras = { ...this.cameras, [cameraUniqueName]: newSettings };
+            // Debug log to help trace issues
+            // eslint-disable-next-line no-console
+            console.debug("Optimistically set pipeline type for ", cameraUniqueName, "to", newSettings.pipelineSettings.pipelineType);
+          }
+        } catch (e) {
+          // Ignore errors - if local update fails we'll rely on server response
+          // eslint-disable-next-line no-console
+          console.warn("Failed to optimistically update pipeline type", e);
+        }
+      }
+
       useStateStore().websocket?.send(payload, true);
     },
+
     /**
      * Change the index of the pipeline of the currently selected camera.
      *
@@ -280,13 +316,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         cameraUniqueName: cameraUniqueName
       };
       if (updateStore) {
-        if (
-          this.cameras[cameraUniqueName].currentPipelineIndex !== -1 &&
-          this.cameras[cameraUniqueName].currentPipelineIndex !== -2
-        ) {
-          this.cameras[cameraUniqueName].lastPipelineIndex = this.cameras[cameraUniqueName].currentPipelineIndex;
+        const existing = this.cameras[cameraUniqueName];
+        if (existing) {
+          const last = (existing.currentPipelineIndex !== -1 && existing.currentPipelineIndex !== -2) ? existing.currentPipelineIndex : existing.lastPipelineIndex;
+          const newCamera = { ...existing, lastPipelineIndex: last, currentPipelineIndex: index };
+          this.cameras = { ...this.cameras, [cameraUniqueName]: newCamera };
         }
-        this.cameras[cameraUniqueName].currentPipelineIndex = index;
       }
       useStateStore().websocket?.send(payload, true);
     },
@@ -318,6 +353,19 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     duplicatePipeline(pipelineIndex: number, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
       const payload = {
         duplicatePipeline: pipelineIndex,
+        cameraUniqueName: cameraUniqueName
+      };
+      useStateStore().websocket?.send(payload, true);
+    },
+    /**
+     * Import a pipeline from arbitrary parsed JSON (should be the same format as exported pipeline files).
+     */
+    importPipeline(
+      parsed: unknown,
+      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+    ) {
+      const payload = {
+        importPipeline: parsed,
         cameraUniqueName: cameraUniqueName
       };
       useStateStore().websocket?.send(payload, true);

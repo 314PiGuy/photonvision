@@ -262,14 +262,30 @@ public class DataSocketHandler {
                                 logger.warn("Unknown message for PSC: " + data.keySet().iterator().next());
                             }
                         }
-                        case SMT_CHANGEPIPELINETYPE ->
-                                dcService.publishEvent(
-                                        new IncomingWebSocketEvent<>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE,
-                                                "changePipelineType",
-                                                (Integer) entryValue,
-                                                cameraUniqueName,
-                                                context));
+                        case SMT_CHANGEPIPELINETYPE -> {
+                            logger.info(
+                                    "Received changePipelineType request for camera "
+                                            + cameraUniqueName
+                                            + " -> "
+                                            + entryValue);
+                            dcService.publishEvent(
+                                    new IncomingWebSocketEvent<>(
+                                            DataChangeDestination.DCD_ACTIVEMODULE,
+                                            "changePipelineType",
+                                            (Integer) entryValue,
+                                            cameraUniqueName,
+                                            context));
+                        }
+                        case SMT_IMPORTPIPELINE -> {
+                            // payload can be arbitrary JSON (Map/List/String), forward to VisionModule
+                            dcService.publishEvent(
+                                    new IncomingWebSocketEvent<>(
+                                            DataChangeDestination.DCD_ACTIVEMODULE,
+                                            "importPipeline",
+                                            entryValue,
+                                            cameraUniqueName,
+                                            context));
+                        }
                     }
                 } catch (Exception e) {
                     logger.error("Failed to parse message!", e);

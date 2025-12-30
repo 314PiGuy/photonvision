@@ -24,7 +24,6 @@ import java.lang.ref.Cleaner;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -143,7 +142,8 @@ public class OnnxObjectDetector implements ObjectDetector {
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
         if (state.isReleased()) {
-            logger.warn("Attempted to use ONNX detector after release for model " + model.modelFile.getName());
+            logger.warn(
+                    "Attempted to use ONNX detector after release for model " + model.modelFile.getName());
             return List.of();
         }
 
@@ -195,10 +195,7 @@ public class OnnxObjectDetector implements ObjectDetector {
                 || (int) letterboxed.size().height != (int) inputSize.height) {
             letterboxed.release();
             throw new RuntimeException(
-                    "Letterboxed frame was "
-                            + letterboxed.size()
-                            + " but expected "
-                            + inputSize);
+                    "Letterboxed frame was " + letterboxed.size() + " but expected " + inputSize);
         }
 
         if (DEBUG_INPUT_FRAME) {
@@ -218,7 +215,7 @@ public class OnnxObjectDetector implements ObjectDetector {
             }
         }
 
-    OnnxResult[] results =
+        OnnxResult[] results =
                 OnnxJNI.detect(
                         ptr,
                         letterboxed.getNativeObjAddr(),
@@ -226,8 +223,8 @@ public class OnnxObjectDetector implements ObjectDetector {
                         nmsThresh,
                         model.properties.labels().size());
 
-    double lastMaxScore = resolveLastMaxScore(results);
-    state.recordLastMaxScore(lastMaxScore);
+        double lastMaxScore = resolveLastMaxScore(results);
+        state.recordLastMaxScore(lastMaxScore);
 
         if (DEBUG_RESULTS) {
             double maxScore = lastMaxScore;
@@ -268,8 +265,7 @@ public class OnnxObjectDetector implements ObjectDetector {
                         Arrays.stream(results)
                                 .map(
                                         result ->
-                                                new NeuralNetworkPipeResult(
-                                                        result.rect, result.classId, result.confidence))
+                                                new NeuralNetworkPipeResult(result.rect, result.classId, result.confidence))
                                 .toList());
 
         if (DEBUG_RESULTS) {
@@ -339,9 +335,9 @@ public class OnnxObjectDetector implements ObjectDetector {
 
     private static final class DetectorState implements Runnable {
         private final long detectorPtr;
-    private final AtomicBoolean released = new AtomicBoolean(false);
+        private final AtomicBoolean released = new AtomicBoolean(false);
         private final String modelName;
-    private volatile double lastMaxScore = Double.NaN;
+        private volatile double lastMaxScore = Double.NaN;
 
         DetectorState(long detectorPtr, String modelName) {
             this.detectorPtr = detectorPtr;

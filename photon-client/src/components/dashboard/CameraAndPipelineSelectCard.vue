@@ -32,6 +32,12 @@ const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
     case PipelineType.ObjectDetection:
       pipelineType.value = WebsocketPipelineType.ObjectDetection;
       break;
+    case PipelineType.Sequential:
+      pipelineType.value = WebsocketPipelineType.Sequential;
+      break;
+    case PipelineType.Parallel:
+      pipelineType.value = WebsocketPipelineType.Parallel;
+      break;
   }
 };
 
@@ -129,6 +135,67 @@ const cancelPipelineNameEdit = () => {
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
 const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const creationLastError = ref<string | null>(null);
+const creationValidated = ref(false);
+const creationPreview = ref<{ type: string; nickname?: string } | null>(null);
+const creationParsed = ref<unknown | null>(null);
+
+function validateCreationJson(raw: unknown) {
+  const knownTypes = new Set([
+    "AprilTagPipelineSettings",
+    "ColoredShapePipelineSettings",
+    "ReflectivePipelineSettings",
+    "ArucoPipelineSettings",
+    "ObjectDetectionPipelineSettings",
+    "SequentialPipelineSettings",
+    "ParallelPipelineSettings"
+  ]);
+
+  if (!Array.isArray(raw) || raw.length !== 2) throw new Error("Top-level JSON must be an array like [\"TypeName\", { ... }]");
+  const [type, settings] = raw as [string, any];
+  if (typeof type !== "string") throw new Error("Type name must be a string.");
+  if (!knownTypes.has(type)) throw new Error(`Unknown pipeline type: ${type}`);
+  if (typeof settings !== "object") throw new Error("Settings must be an object.");
+  return { type, nickname: settings.pipelineNickname || type };
+}
+
+function onCreationFileSelected(e: Event) {
+  creationLastError.value = null;
+  creationValidated.value = false;
+  creationPreview.value = null;
+  creationParsed.value = null;
+
+  const el = e.target as HTMLInputElement;
+  const file = el.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result));
+      const preview = validateCreationJson(parsed);
+      creationPreview.value = preview;
+      creationParsed.value = parsed;
+      creationValidated.value = true;
+    } catch (err: any) {
+      creationLastError.value = err.message || String(err);
+      creationParsed.value = null;
+      creationValidated.value = false;
+    }
+  };
+  reader.onerror = () => (creationLastError.value = "Failed to read file.");
+  reader.readAsText(file);
+}
+
+function importValidatedPipeline() {
+  if (!creationValidated.value || !creationParsed.value) return;
+  useCameraSettingsStore().importPipeline(creationParsed.value);
+  showPipelineCreationDialog.value = false;
+  creationParsed.value = null;
+  creationPreview.value = null;
+  creationValidated.value = false;
+  creationLastError.value = null;
+}
+
 const validNewPipelineTypes = computed(() => {
   const pipelineTypes = [
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
@@ -136,6 +203,8 @@ const validNewPipelineTypes = computed(() => {
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
     { name: "ArUco", value: WebsocketPipelineType.Aruco }
   ];
+    // Custom JSON-configured pipeline option (creates a sequential custom pipeline)
+    pipelineTypes.push({ name: "Custom (JSON)", value: WebsocketPipelineType.Sequential });
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
@@ -174,6 +243,8 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
     { name: "ArUco", value: WebsocketPipelineType.Aruco }
   ];
+    // Allow selecting a custom JSON pipeline type in the type-change list
+    pipelineTypes.push({ name: "Custom (JSON)", value: WebsocketPipelineType.Sequential });
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
@@ -206,10 +277,13 @@ const confirmChangePipelineType = () => {
   const type = currentPipelineType.value;
   if (type === WebsocketPipelineType.DriverMode || type === WebsocketPipelineType.Calib3d) return;
   useCameraSettingsStore().changeCurrentPipelineType(type);
+  console.log(type);
+  console.log(useCameraSettingsStore().currentWebsocketPipelineType);
   showPipelineTypeChangeDialog.value = false;
 };
 const cancelChangePipelineType = () => {
   pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  console.log(useCameraSettingsStore().currentWebsocketPipelineType);
   showPipelineTypeChangeDialog.value = false;
 };
 
@@ -237,6 +311,12 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
     case PipelineType.ObjectDetection:
       pipelineType.value = WebsocketPipelineType.ObjectDetection;
+      break;
+    case PipelineType.Sequential:
+      pipelineType.value = WebsocketPipelineType.Sequential;
+      break;
+    case PipelineType.Parallel:
+      pipelineType.value = WebsocketPipelineType.Parallel;
       break;
   }
 });
@@ -403,8 +483,20 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             tooltip="Pipeline type, which changes the type of processing that will happen on input frames"
             :items="validNewPipelineTypes"
           />
+          <template v-if="newPipelineType === WebsocketPipelineType.Sequential || newPipelineType === WebsocketPipelineType.Parallel">
+            <div style="margin-top:12px; display:flex; gap:8px; align-items:center">
+              <input type="file" accept="application/json" @change="onCreationFileSelected" />
+              <div v-if="creationValidated" style="color:var(--v-theme-success)">Valid JSON ✓</div>
+              <div v-else-if="creationLastError" style="color:var(--v-theme-error)">Error: {{ creationLastError }}</div>
+            </div>
+            <div v-if="creationPreview" style="margin-top:8px">
+              <div style="font-weight:600">Preview:</div>
+              <div style="margin-left:8px">{{ creationPreview.nickname }} ({{ creationPreview.type }})</div>
+            </div>
+          </template>
         </v-card-text>
         <v-card-actions class="pr-5 pt-10px pb-5">
+          <div style="flex:1; font-size:12px; opacity:0.8">Tip: For Custom (JSON) pipelines, upload a JSON here to validate; after creation switch to the pipeline and use the "Custom" tab to visualize and apply settings.</div>
           <v-btn
             color="buttonPassive"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -413,6 +505,15 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             Cancel
           </v-btn>
           <v-btn
+            v-if="creationValidated && (newPipelineType === WebsocketPipelineType.Sequential || newPipelineType === WebsocketPipelineType.Parallel)"
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="importValidatedPipeline"
+          >
+            Import
+          </v-btn>
+          <v-btn
+            v-else
             color="buttonActive"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             :disabled="checkPipelineName(newPipelineName) !== true"

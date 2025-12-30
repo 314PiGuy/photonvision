@@ -57,6 +57,14 @@ const overlayStyle = computed<StyleValue>(() => {
   }
 });
 
+const nodeFrameSrc = computed<string | null>(() => {
+  const nf = useStateStore().nodeFrame;
+  if (!nf) return null;
+  if (nf.cameraUniqueName && nf.cameraUniqueName !== props.cameraSettings.uniqueName) return null;
+  if (nf.status !== "ok" || !nf.imageBase64) return null;
+  return `data:image/jpeg;base64,${nf.imageBase64}`;
+});
+
 const handleCaptureClick = () => {
   if (props.streamType === "Raw") {
     useCameraSettingsStore().saveInputSnapshot();
@@ -126,6 +134,9 @@ onBeforeUnmount(() => {
         @click="handlePopoutClick"
       />
     </div>
+
+    <!-- Node frame preview overlay -->
+    <img v-if="nodeFrameSrc" :src="nodeFrameSrc" class="node-frame-overlay" />
   </div>
 </template>
 
@@ -166,5 +177,17 @@ onBeforeUnmount(() => {
 
 .stream-container:hover .stream-overlay {
   opacity: 1;
+}
+
+.node-frame-overlay {
+  position: absolute;
+  width: 34%;
+  height: 34%;
+  object-fit: contain;
+  right: 8px;
+  bottom: 8px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 6px;
+  background: rgba(0,0,0,0.35);
 }
 </style>

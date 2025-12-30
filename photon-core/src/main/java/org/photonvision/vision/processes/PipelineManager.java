@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
@@ -244,27 +245,71 @@ public class PipelineManager {
         switch (desiredPipelineSettings.pipelineType) {
             case Reflective -> {
                 logger.debug("Creating Reflective pipeline");
-                currentUserPipeline =
-                        new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
+                try {
+                    var s =
+                            JacksonUtils.deserialize(desiredPipelineSettings, ReflectivePipelineSettings.class);
+                    currentUserPipeline = new ReflectivePipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct ReflectivePipeline from settings", e);
+                }
             }
             case ColoredShape -> {
                 logger.debug("Creating ColoredShape pipeline");
-                currentUserPipeline =
-                        new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
+                try {
+                    var s =
+                            JacksonUtils.deserialize(desiredPipelineSettings, ColoredShapePipelineSettings.class);
+                    currentUserPipeline = new ColoredShapePipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct ColoredShapePipeline from settings", e);
+                }
             }
             case AprilTag -> {
                 logger.debug("Creating AprilTag pipeline");
-                currentUserPipeline =
-                        new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
+                try {
+                    var s = JacksonUtils.deserialize(desiredPipelineSettings, AprilTagPipelineSettings.class);
+                    currentUserPipeline = new AprilTagPipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct AprilTagPipeline from settings", e);
+                }
             }
             case Aruco -> {
                 logger.debug("Creating ArUco Pipeline");
-                currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                try {
+                    var s = JacksonUtils.deserialize(desiredPipelineSettings, ArucoPipelineSettings.class);
+                    currentUserPipeline = new ArucoPipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct ArucoPipeline from settings", e);
+                }
             }
             case ObjectDetection -> {
                 logger.debug("Creating ObjectDetection Pipeline");
-                currentUserPipeline =
-                        new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
+                try {
+                    var s =
+                            JacksonUtils.deserialize(
+                                    desiredPipelineSettings, ObjectDetectionPipelineSettings.class);
+                    currentUserPipeline = new ObjectDetectionPipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct ObjectDetectionPipeline from settings", e);
+                }
+            }
+            case Sequential -> {
+                logger.debug("Creating Sequential Pipeline");
+                try {
+                    var s =
+                            JacksonUtils.deserialize(desiredPipelineSettings, SequentialPipelineSettings.class);
+                    currentUserPipeline = new SequentialPipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct SequentialPipeline from settings", e);
+                }
+            }
+            case Parallel -> {
+                logger.debug("Creating Parallel Pipeline");
+                try {
+                    var s = JacksonUtils.deserialize(desiredPipelineSettings, ParallelPipelineSettings.class);
+                    currentUserPipeline = new ParallelPipeline(s);
+                } catch (Exception e) {
+                    logger.error("Failed to construct ParallelPipeline from settings", e);
+                }
             }
             case Calib3d, DriverMode, FocusCamera -> {}
         }
@@ -321,6 +366,13 @@ public class PipelineManager {
         return addPipeline(type, "New Pipeline");
     }
 
+    public CVPipelineSettings addPipeline(CVPipelineSettings settings) {
+        if (settings == null) return null;
+        addPipelineInternal(settings);
+        reassignIndexes();
+        return settings;
+    }
+
     public CVPipelineSettings addPipeline(PipelineType type, String nickname) {
         var added = createSettingsForType(type, nickname);
         if (added == null) {
@@ -340,6 +392,8 @@ public class PipelineManager {
                     case AprilTag -> new AprilTagPipelineSettings();
                     case Aruco -> new ArucoPipelineSettings();
                     case ObjectDetection -> new ObjectDetectionPipelineSettings();
+                    case Sequential -> new SequentialPipelineSettings();
+                    case Parallel -> new ParallelPipelineSettings();
                     case Calib3d, DriverMode, FocusCamera -> {
                         logger.error("Got invalid pipeline type: " + type);
                         yield null;
@@ -462,6 +516,13 @@ public class PipelineManager {
             logger.error("Could not match type " + newType + " to a PipelineType!");
             return;
         }
+
+        logger.info("Requested pipeline type change to baseIndex=" + newType);
+        if (type == null) {
+            logger.error("Could not find PipelineType for baseIndex " + newType);
+            return;
+        }
+        logger.info("Matched requested type to " + type + " (baseIndex=" + type.baseIndex + ")");
 
         if (type.baseIndex == getCurrentPipelineSettings().pipelineType.baseIndex) {
             logger.debug(

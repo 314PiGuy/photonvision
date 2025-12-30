@@ -66,6 +66,8 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         this.settings = s;
     }
 
+    private volatile Frame lastDebugFrame = null;
+
     public R run(Frame frame, QuirkyCamera cameraQuirks) {
         if (released) {
             throw new RuntimeException("Pipeline use-after-free!");
@@ -83,7 +85,57 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
 
         result.setImageCaptureTimestampNanos(frame.timestampNanos);
 
+        // Store a copy of the output frame to be used by the UI for node previews
+        try {
+            if (result.inputAndOutputFrame != null) {
+                updateDebugFrame(result.inputAndOutputFrame);
+            }
+        } catch (Exception e) {
+            // Never allow debug frame failures to break the pipeline
+            e.printStackTrace();
+        }
+
         return result;
+    }
+
+    protected synchronized void updateDebugFrame(Frame src) {
+        if (src == null) return;
+        Frame copy = new Frame();
+        src.copyTo(copy);
+        if (lastDebugFrame != null) {
+            try {
+                lastDebugFrame.release();
+            } catch (Exception ignored) {
+            }
+        }
+        lastDebugFrame = copy;
+    }
+
+    /**
+     * Return the latest debug image for this pipeline node, encoded as base64 jpeg. Empty if no frame
+     * available.
+     */
+    public java.util.Optional<String> getDebugImageBase64() {
+        Frame f = lastDebugFrame;
+        if (f == null) return java.util.Optional.empty();
+
+        try {
+            var mat = f.processedImage.getMat();
+            var buf = new org.opencv.core.MatOfByte();
+            boolean ok = org.opencv.imgcodecs.Imgcodecs.imencode(".jpg", mat, buf);
+            if (!ok) return java.util.Optional.empty();
+            byte[] bytes = buf.toArray();
+            String b64 = java.util.Base64.getEncoder().encodeToString(bytes);
+            return java.util.Optional.of(b64);
+        } catch (Exception e) {
+            return java.util.Optional.empty();
+        }
+    }
+
+    /** Return the pipeline node at the given path. Default: if path is empty or null, return this. */
+    public CVPipeline getNodeAtPath(java.util.List<Integer> path) {
+        if (path == null || path.isEmpty()) return this;
+        return null;
     }
 
     /**
