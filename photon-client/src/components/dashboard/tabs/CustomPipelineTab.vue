@@ -31,6 +31,28 @@ watch(
 );
 
 function parseInputJson(input: string) {
+      // Recursively check for at least one output subpipeline
+      function hasOutputSubpipeline(node: any): boolean {
+        if (!node) return false;
+        if (Array.isArray(node)) {
+          return node.some((child) => hasOutputSubpipeline(child));
+        }
+        // Check for output property or type
+        if (node.pipelineType === 'Output' || node.type === 'Output') {
+          return true;
+        }
+        // Check children recursively
+        if (Array.isArray(node.children)) {
+          return node.children.some((child: any) => hasOutputSubpipeline(child));
+        }
+        if (node.pipeline && Array.isArray(node.pipeline.children)) {
+          return node.pipeline.children.some((child: any) => hasOutputSubpipeline(child));
+        }
+        return false;
+      }
+      if (!hasOutputSubpipeline(settings)) {
+        throw new Error('Custom pipeline must include at least one output subpipeline.');
+      }
   parseError.value = null;
   validated.value = false;
   parsedSettings.value = null;
@@ -38,7 +60,7 @@ function parseInputJson(input: string) {
   try {
     const parsed = JSON.parse(input);
 
-    // Accept wrapper-array format ["TypeName", { ... }]
+    // Accept wrapper-array format ["TypeName", { ... }] or new object format { type, properties }
     let settings: any = parsed;
     if (Array.isArray(parsed) && parsed.length === 2 && typeof parsed[0] === "string") {
       settings = parsed[1];
@@ -47,11 +69,35 @@ function parseInputJson(input: string) {
     // Validate basic shape: must be an object and for custom pipeline should include pipelineType or children
     if (settings == null || typeof settings !== "object") throw new Error("Parsed JSON must be an object or wrapper array");
 
+    // If this is a top-level pipeline wrapper, descend into the 'pipeline' property
+    if (settings.pipeline && typeof settings.pipeline === 'object') {
+      settings = settings.pipeline;
+    }
+
     // Minimal validation for sequential/parallel: must have children array
     if (!Array.isArray((settings as any).children) && (settings as any).pipelineType === undefined) {
       // Allow full-settings that don't include children (still valid) but mark as potentially incomplete
       // We'll accept any object though
     }
+
+    // --- Console logging for debugging characteristics ---
+    // Log the top-level keys and types
+    console.log('[CustomPipelineTab] Parsed settings:', settings);
+    if (settings.children) {
+      console.log('[CustomPipelineTab] children:', settings.children);
+      settings.children.forEach((child: any, idx: number) => {
+        if (Array.isArray(child)) {
+          console.log(`[CustomPipelineTab] child[${idx}] is array:`, child);
+        } else if (child && typeof child === 'object' && child.type && child.properties) {
+          console.log(`[CustomPipelineTab] child[${idx}] is object with type/properties:`, child);
+        } else {
+          console.log(`[CustomPipelineTab] child[${idx}] is object:`, child);
+        }
+      });
+    } else {
+      console.log('[CustomPipelineTab] No children property in settings');
+    }
+    // --- End console logging ---
 
     parsedSettings.value = settings;
     validated.value = true;

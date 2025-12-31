@@ -161,6 +161,30 @@ public class JacksonUtils {
             @SuppressWarnings("unchecked")
             Map<String, ?> map = (Map<String, ?>) s;
 
+            // --- PATCH: Support {type, properties} format in children arrays ---
+            // If this map has a 'children' key and it's a List, check for {type, properties} children
+            if (map.containsKey("children") && map.get("children") instanceof java.util.List) {
+                java.util.List<?> children = (java.util.List<?>) map.get("children");
+                java.util.List<Object> newChildren = new java.util.ArrayList<>();
+                for (Object child : children) {
+                    if (child instanceof Map) {
+                        Map<?, ?> childMap = (Map<?, ?>) child;
+                        if (childMap.containsKey("type") && childMap.containsKey("properties") && childMap.get("properties") instanceof Map) {
+                            // Flatten: merge properties into a new map, set pipelineType
+                            Map<String, Object> merged = new java.util.HashMap<>();
+                            merged.put("pipelineType", childMap.get("type"));
+                            merged.putAll((Map<? extends String, ? extends Object>) childMap.get("properties"));
+                            newChildren.add(merged);
+                            continue;
+                        }
+                    }
+                    newChildren.add(child); // fallback: keep as-is
+                }
+                // Replace children with the new flattened list
+                ((Map<String, Object>) map).put("children", newChildren);
+            }
+            // --- END PATCH ---
+
             // Fast path: support a simple explicit envelope form from the UI:
             // { "type": "ObjectDetection", "payload": { ... } }
             if (map.containsKey("type") && map.containsKey("payload")) {

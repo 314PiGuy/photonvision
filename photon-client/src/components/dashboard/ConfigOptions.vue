@@ -93,7 +93,7 @@ const isCustomTop = computed(() => {
   );
 });
 
-const tabGroups = computed<ConfigOption[][]>(() => {
+const tabGroups = computed((): ConfigOption[][] => {
   // Just return the input tab because we know that is always the case in driver mode
   if (useCameraSettingsStore().isDriverMode) return [[allTabs.inputTab]];
 
@@ -104,46 +104,83 @@ const tabGroups = computed<ConfigOption[][]>(() => {
     useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
   // Determine if the current pipeline is a custom JSON-configured one. Check both the websocket pipeline type
   // and whether the settings include a `children` array (more robust against mismatched type encodings).
-  const rawSettings: any = useCameraSettingsStore().currentPipelineSettings;
-  const hasChildren = rawSettings && Array.isArray(rawSettings.children);
-  const isCustom =
-    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Sequential ||
-    useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Parallel ||
-    hasChildren;
-
-  // Expose for template usage
-  const showVisualizer = isCustom;
-
-  // If a custom JSON pipeline is selected, only show Input, Custom, and Output tabs
-  if (isCustom) {
-    // Some custom pipelines may include children that produce targets (e.g. AprilTag, ArUco, ObjectDetection).
-    // Detect those and include the Targets tab so users can still view detections.
-    const childProducesTargets = (child: any) => {
-      if (!child) return false;
-      // Wrapper-array polymorphic form: ["TypeName", { ... }]
-      if (Array.isArray(child) && typeof child[0] === "string") {
-        const typeName: string = child[0];
-        // Accept common variations like "Object Detection" or "ObjectDetection"
-        return /AprilTag|Aruco|ObjectDetection|Object Detection/i.test(typeName);
-      }
-      // Heuristic checks on object form
-      if (child.tagFamily !== undefined) return true; // AprilTag
-      if (child.dictionary !== undefined) return true; // ArUco
-      if (child.model !== undefined || child.minConfidence !== undefined || child.classNames !== undefined) return true; // ObjectDetection
-      return false;
-    };
-
-    const showTargets = hasChildren && rawSettings.children.some((c: any) => childProducesTargets(c));
-
-    // Reset selected tab indices so the Custom tab is visible and selected
-    selectedTabs.value = [0];
-
-    const tabs = [allTabs.inputTab, allTabs.customTab];
-    if (showTargets) tabs.push(allTabs.targetsTab);
-    tabs.push(allTabs.outputTab);
-
-    return [tabs];
+  console.log("[ConfigOptions] currentPipelineSettings:", useCameraSettingsStore().currentPipelineSettings);
+  let pipelineSettings: any = useCameraSettingsStore().currentPipelineSettings;
+  let customChildren = undefined;
+  // Try to extract children from nested pipeline property if present
+  if (pipelineSettings && pipelineSettings.pipeline && Array.isArray(pipelineSettings.pipeline.children)) {
+    customChildren = pipelineSettings.pipeline.children;
+  } else if (pipelineSettings && Array.isArray(pipelineSettings.children)) {
+    customChildren = pipelineSettings.children;
   }
+  // Fallback: try to find children recursively if not found
+  if (!customChildren && pipelineSettings) {
+    for (const key in pipelineSettings) {
+      if (Array.isArray(pipelineSettings[key])) {
+        customChildren = pipelineSettings[key];
+        break;
+      }
+    }
+  }
+  const rawSettings = { ...pipelineSettings, children: customChildren };
+    console.log("[ConfigOptions] rawSettings:", rawSettings);
+    if (rawSettings) {
+      console.log("[ConfigOptions] rawSettings.children:", rawSettings.children, "type:", typeof rawSettings.children, "isArray:", Array.isArray(rawSettings.children));
+    } else {
+      console.log("[ConfigOptions] rawSettings is null/undefined");
+    }
+    const hasChildren = rawSettings && Array.isArray(rawSettings.children);
+    const isCustom =
+      useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Sequential ||
+      useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Parallel ||
+      hasChildren;
+  
+    // If a custom JSON pipeline is selected, only show Input, Custom, and Output tabs
+    if (isCustom) {
+      // Recursively detect whether any child produces targets (AprilTag, ArUco, ObjectDetection, or Object Detection)
+      const childProducesTargets = (child: any): boolean => {
+        if (!child) return false;
+  
+        // Direct pipeline type match
+        if (child.pipelineType && /AprilTag|Aruco|ObjectDetection|Object Detection/i.test(child.pipelineType)) {
+          console.log(`[ConfigOptions] childProducesTargets: pipelineType='${child.pipelineType}' -> true`);
+          return true;
+        }
+  
+        // Object detection may be encoded with model/minConfidence/classNames
+        if (child.model || child.minConfidence || child.classNames) {
+          console.log("[ConfigOptions] childProducesTargets: object-detection style keys found -> true");
+          return true;
+        }
+  
+        // Recurse into nested children arrays if present
+        const nested = child.children || (child.pipeline && child.pipeline.children);
+        if (Array.isArray(nested)) {
+          return nested.some((c: any) => childProducesTargets(c));
+        }
+  
+        return false;
+      };
+  
+      if (hasChildren) {
+        console.log("[ConfigOptions] hasChildren:", rawSettings.children);
+        rawSettings.children.forEach((c: any, idx: number) => {
+          const result = childProducesTargets(c);
+          console.log(`[ConfigOptions] child[${idx}] produces targets:`, result);
+        });
+      } else {
+        console.log("[ConfigOptions] hasChildren is false");
+      }
+  
+      const showTargets = hasChildren && rawSettings.children.some((c: any) => childProducesTargets(c));
+      console.log("[ConfigOptions] showTargets:", showTargets);
+  
+      // Reset selected tab indices so the Custom tab is visible and selected
+      selectedTabs.value = [0];
+  
+      const tabs = [allTabs.inputTab, allTabs.customTab, allTabs.targetsTab, allTabs.outputTab];
+      return [tabs];
+    }
 
   return getTabGroups()
     .map((tabGroup) =>
@@ -160,6 +197,11 @@ const tabGroups = computed<ConfigOption[][]>(() => {
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
+});
+
+const showVisualizer = computed(() => {
+  // Show visualizer when the Custom tab is present (i.e. the pipeline is custom).
+  return tabGroups.value.some((group) => group.some((tab) => tab.tabName === "Custom"));
 });
 
 const onBeforeTabUpdate = () => {
