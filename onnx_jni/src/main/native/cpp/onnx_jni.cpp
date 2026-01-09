@@ -675,7 +675,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_photonvision_onnx_OnnxJNI_detect(
     jdouble nmsThresh,
     jint expectedClassCount) {
 
-    std::cout << "[ONNX JNI] Starting detection" << std::endl;
+    // std::cout << "[ONNX JNI] Starting detection" << std::endl;
     auto* detector = reinterpret_cast<OnnxDetector*>(handle);
     if (detector == nullptr || detector->session == nullptr) {
         ThrowRuntimeException(env, "Invalid ONNX detector instance");

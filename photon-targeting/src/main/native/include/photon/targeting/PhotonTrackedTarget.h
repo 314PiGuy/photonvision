@@ -86,6 +86,20 @@ class PhotonTrackedTarget : public PhotonTrackedTarget_PhotonStruct {
   float GetDetectedObjectConfidence() const { return objDetectConf; }
 
   /**
+   * Get the string identifier for the detected object type.
+   * This returns a human-readable description such as:
+   * - "AprilTag" for fiducial markers
+   * - The class name from object detection (e.g., "Note", "Coral")
+   * - "ColoredShape" for colored shape detection
+   * - "Reflective" for reflective tape detection
+   * - Empty string if not set
+   * @return The detected class name string
+   */
+  std::string GetDetectedClass() const {
+    return std::string(detectedClassBytes.begin(), detectedClassBytes.end());
+  }
+
+  /**
    * Return a list of the 4 corners in image space (origin top left, x right, y
    * down), in no particular order, of the minimum area bounding rectangle of
    * this target

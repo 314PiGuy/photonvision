@@ -218,6 +218,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                 new TargetCalculationParameters(
                                         false, null, null, null, null, frameStaticProperties));
 
+                // Set the detected class name for this AprilTag target
+                target.setDetectedClass("AprilTag");
+
                 var correctedBestPose =
                         MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
                 var correctedAltPose =
@@ -229,6 +232,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
                 targetList.add(target);
+            }
+        }
+
+        // Also set detected class for targets created for multitag (if any still don't have it set)
+        for (TrackedTarget target : targetList) {
+            if (target.getDetectedClass().isEmpty()) {
+                target.setDetectedClass("AprilTag");
             }
         }
 

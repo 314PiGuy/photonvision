@@ -12,7 +12,8 @@ import org.photonvision.vision.pipe.impl.ObjectDetectionPipe.ObjectDetectionPipe
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /** Minimal pipeline that only runs object detection. */
-public class SimpleObjectDetectionPipeline extends CVPipeline<CVPipelineResult, CVPipelineSettings> {
+public class SimpleObjectDetectionPipeline
+        extends CVPipeline<CVPipelineResult, CVPipelineSettings> {
     private final ObjectDetectionPipe objectDetectionPipe = new ObjectDetectionPipe();
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -51,7 +52,8 @@ public class SimpleObjectDetectionPipeline extends CVPipeline<CVPipelineResult, 
                         var mpField = modelProps.getClass().getMethod("modelPath");
                         Object mpVal = mpField.invoke(modelProps);
                         if (mpVal != null) {
-                            Optional<Model> maybe = NeuralNetworkModelManager.getInstance().getModel(mpVal.toString());
+                            Optional<Model> maybe =
+                                    NeuralNetworkModelManager.getInstance().getModel(mpVal.toString());
                             modelToUse = maybe.orElse(NullModel.getInstance());
                         }
                     } catch (Exception ignored) {

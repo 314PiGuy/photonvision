@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.photonvision.vision.processes.VisionModuleChangeSubscriber.setProperty;
 
 import java.util.ArrayList;
@@ -187,28 +186,35 @@ public class VisionModuleChangeSubscriberTest {
         var nnpm = new org.photonvision.common.configuration.NeuralNetworkPropertyManager();
         var labels = new java.util.LinkedList<String>();
         labels.add("person");
-        var mp = new org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties(
-                java.nio.file.Path.of("/models/yolo11n_640.onnx"),
-                "yolo11n_640",
-                labels,
-                640,
-                640,
-                org.photonvision.common.configuration.NeuralNetworkModelManager.Family.ONNX,
-                org.photonvision.common.configuration.NeuralNetworkModelManager.Version.YOLOV11);
+        var mp =
+                new org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties(
+                        java.nio.file.Path.of("/models/yolo11n_640.onnx"),
+                        "yolo11n_640",
+                        labels,
+                        640,
+                        640,
+                        org.photonvision.common.configuration.NeuralNetworkModelManager.Family.ONNX,
+                        org.photonvision.common.configuration.NeuralNetworkModelManager.Version.YOLOV11);
         nnpm.addModelProperties(mp);
         conf.setNeuralNetworkProperties(nnpm);
 
         // Inject the config into the SqlConfigProvider used by ConfigManager
         var cm = org.photonvision.common.configuration.ConfigManager.getInstance();
         // Use reflection to set the private provider.config to our test config
-        java.lang.reflect.Field providerField = org.photonvision.common.configuration.ConfigManager.class.getDeclaredField("m_provider");
+        java.lang.reflect.Field providerField =
+                org.photonvision.common.configuration.ConfigManager.class.getDeclaredField("m_provider");
         providerField.setAccessible(true);
         var provider = providerField.get(cm);
-        java.lang.reflect.Method setConfigMethod = provider.getClass().getMethod("setConfig", org.photonvision.common.configuration.PhotonConfiguration.class);
+        java.lang.reflect.Method setConfigMethod =
+                provider
+                        .getClass()
+                        .getMethod(
+                                "setConfig", org.photonvision.common.configuration.PhotonConfiguration.class);
         setConfigMethod.invoke(provider, conf);
 
         // Run normalization
-        org.photonvision.vision.processes.VisionModuleChangeSubscriber.normalizeModelShorthandInPipelinePayload(payload);
+        org.photonvision.vision.processes.VisionModuleChangeSubscriber
+                .normalizeModelShorthandInPipelinePayload(payload);
 
         // Verify that the nested model map now contains modelPath
         var children = ((java.util.Map) payload.get("pipeline")).get("children");
@@ -218,7 +224,5 @@ public class VisionModuleChangeSubscriberTest {
         var model = (java.util.Map) pl.get("model");
         assertTrue(model.containsKey("modelPath"));
         assertEquals("/models/yolo11n_640.onnx", model.get("modelPath"));
-
-
     }
 }

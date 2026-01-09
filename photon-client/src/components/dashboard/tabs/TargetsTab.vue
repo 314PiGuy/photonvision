@@ -33,6 +33,20 @@ const resetCurrentBuffer = () => {
   // Need to clear the array in place
   if (useStateStore().currentMultitagBuffer) useStateStore().currentMultitagBuffer!.length = 0;
 };
+
+const displayTargets = computed(() => {
+  if (useStateStore().nodeFrame?.targets) {
+    return useStateStore().nodeFrame?.targets;
+  }
+  return useStateStore().currentPipelineResults?.targets;
+});
+
+const displayClassNames = computed(() => {
+  if (useStateStore().nodeFrame?.classNames) {
+    return useStateStore().nodeFrame?.classNames;
+  }
+  return useStateStore().currentPipelineResults?.classNames;
+});
 </script>
 
 <template>
@@ -51,6 +65,7 @@ const resetCurrentBuffer = () => {
               >
                 Fiducial ID
               </th>
+              <th class="text-center text-white">Detected Class</th>
               <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
                 <th class="text-center text-white">Class</th>
                 <th class="text-center text-white">Confidence</th>
@@ -79,7 +94,7 @@ const resetCurrentBuffer = () => {
           </thead>
           <tbody>
             <tr
-              v-for="(target, index) in useStateStore().currentPipelineResults?.targets"
+              v-for="(target, index) in displayTargets"
               :key="index"
               class="text-white"
             >
@@ -92,11 +107,14 @@ const resetCurrentBuffer = () => {
               >
                 {{ target.fiducialId }}
               </td>
+              <td class="text-center text-white">
+                {{ target.detectedClass }}
+              </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
                 class="text-center text-white"
               >
-                {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
+                {{ displayClassNames?.[target.classId] }}
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"

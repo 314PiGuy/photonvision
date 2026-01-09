@@ -1,0 +1,8 @@
+{
+  "leftCameraName": "one",
+  "rightCameraName": "two",
+  "leftPosition": {"x": -0.15, "y": 0, "z": 0, "rotX": 0, "rotY": 0, "rotZ": 0},
+  "rightPosition": {"x": 0.15, "y": 0, "z": 0, "rotX": 0, "rotY": 0, "rotZ": 0},
+  "leftFOV": {"horizontalFOV": 70.0, "verticalFOV": 50.0},
+  "rightFOV": {"horizontalFOV": 70.0, "verticalFOV": 50.0}
+}

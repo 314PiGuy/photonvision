@@ -48,6 +48,7 @@ import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.processes.VisionSourceManager;
+import org.photonvision.vision.stereo.StereoVisionManager;
 import org.photonvision.vision.target.TargetModel;
 
 public class Main {
@@ -312,6 +313,9 @@ public class Main {
         }
 
         VisionSourceManager.getInstance().registerTimedTasks();
+
+        logger.debug("Loading StereoVisionManager...");
+        StereoVisionManager.getInstance().initialize(VisionSourceManager.getInstance().vmm);
 
         logger.info("Starting server...");
         HardwareManager.getInstance().setError(null);

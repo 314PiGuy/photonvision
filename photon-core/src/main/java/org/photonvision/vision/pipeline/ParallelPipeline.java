@@ -58,7 +58,8 @@ public class ParallelPipeline extends CVPipeline<CVPipelineResult, ParallelPipel
         }
     }
 
-    private boolean childrenSettingsEqual(java.util.List<CVPipelineSettings> a, java.util.List<CVPipelineSettings> b) {
+    private boolean childrenSettingsEqual(
+            java.util.List<CVPipelineSettings> a, java.util.List<CVPipelineSettings> b) {
         if (a == b) return true;
         if (a == null || b == null) return false;
         if (a.size() != b.size()) return false;
@@ -88,7 +89,8 @@ public class ParallelPipeline extends CVPipeline<CVPipelineResult, ParallelPipel
     protected void setPipeParamsImpl() {
         if (!childrenSettingsEqual(lastSeenChildrenSettings, settings.children)) {
             instantiateChildren();
-            lastSeenChildrenSettings = settings.children == null ? null : new java.util.ArrayList<>(settings.children);
+            lastSeenChildrenSettings =
+                    settings.children == null ? null : new java.util.ArrayList<>(settings.children);
         }
         for (int i = 0; i < children.size(); i++) {
             var childPipeline = children.get(i);

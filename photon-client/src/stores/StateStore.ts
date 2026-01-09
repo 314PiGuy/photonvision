@@ -52,6 +52,8 @@ interface StateStore {
     path?: number[];
     status?: string;
     imageBase64?: string;
+    targets?: any[];
+    classNames?: string[];
   };
 }
 
@@ -169,12 +171,14 @@ export const useStateStore = defineStore("state", {
     updateDiscoveredCameras(data: VsmState) {
       this.vsmState = data;
     },
-    updateNodeFrameFromWebsocket(data: { cameraUniqueName?: string; path?: number[]; status?: string; image_base64?: string }) {
+    updateNodeFrameFromWebsocket(data: { cameraUniqueName?: string; path?: number[]; status?: string; image_base64?: string; targets?: any[]; classNames?: string[] }) {
       this.nodeFrame = {
         cameraUniqueName: data.cameraUniqueName,
         path: data.path,
         status: data.status,
-        imageBase64: data.image_base64
+        imageBase64: data.image_base64,
+        targets: data.targets,
+        classNames: data.classNames
       };
     },
     showSnackbarMessage(data: {

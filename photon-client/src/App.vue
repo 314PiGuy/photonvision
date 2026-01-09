@@ -2,6 +2,7 @@
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useStereoStore } from "@/stores/StereoStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import { inject, onBeforeMount } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
@@ -47,6 +48,13 @@ if (!is_demo) {
       }
       if (data.nodeFrame !== undefined) {
         useStateStore().updateNodeFrameFromWebsocket(data.nodeFrame);
+      }
+      // Handle stereo vision websocket updates
+      if (data.stereoResult !== undefined) {
+        useStereoStore().$patch({ currentResult: data.stereoResult });
+      }
+      if (data.stereoImage !== undefined) {
+        useStereoStore().$patch({ stereoImage: data.stereoImage });
       }
     },
     () => {

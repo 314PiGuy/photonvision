@@ -40,6 +40,9 @@ public class PhotonTrackedTarget
     public Transform3d altCameraToTarget;
     public double poseAmbiguity;
 
+    // UTF-8 encoded bytes of the detected class name string (e.g., "AprilTag", "Note", "Coral")
+    public List<Byte> detectedClassBytes;
+
     // Corners from the min-area rectangle bounding the target
     public List<TargetCorner> minAreaRectCorners;
 
@@ -60,6 +63,37 @@ public class PhotonTrackedTarget
             double ambiguity,
             List<TargetCorner> minAreaRectCorners,
             List<TargetCorner> detectedCorners) {
+        this(
+                yaw,
+                pitch,
+                area,
+                skew,
+                fiducialId,
+                classId,
+                objDetectConf,
+                pose,
+                altPose,
+                ambiguity,
+                "",
+                minAreaRectCorners,
+                detectedCorners);
+    }
+
+    /** Construct a tracked target with detected class name string */
+    public PhotonTrackedTarget(
+            double yaw,
+            double pitch,
+            double area,
+            double skew,
+            int fiducialId,
+            int classId,
+            float objDetectConf,
+            Transform3d pose,
+            Transform3d altPose,
+            double ambiguity,
+            String detectedClassName,
+            List<TargetCorner> minAreaRectCorners,
+            List<TargetCorner> detectedCorners) {
         assert minAreaRectCorners.size() == 4;
 
         if (detectedCorners.size() > MAX_CORNERS) {
@@ -78,10 +112,49 @@ public class PhotonTrackedTarget
         this.minAreaRectCorners = minAreaRectCorners;
         this.detectedCorners = detectedCorners;
         this.poseAmbiguity = ambiguity;
+        this.detectedClassBytes = stringToByteList(detectedClassName != null ? detectedClassName : "");
     }
 
     public PhotonTrackedTarget() {
-        // TODO Auto-generated constructor stub
+        this.detectedClassBytes = new java.util.ArrayList<>();
+    }
+
+    /** Convert a string to a List of Bytes (UTF-8 encoding) */
+    private static List<Byte> stringToByteList(String str) {
+        if (str == null || str.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        byte[] bytes = str.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        List<Byte> result = new java.util.ArrayList<>(bytes.length);
+        for (byte b : bytes) {
+            result.add(b);
+        }
+        return result;
+    }
+
+    /** Convert a List of Bytes to a String (UTF-8 decoding) */
+    private static String byteListToString(List<Byte> bytes) {
+        if (bytes == null || bytes.isEmpty()) {
+            return "";
+        }
+        byte[] arr = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            arr[i] = bytes.get(i);
+        }
+        return new String(arr, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Get the string identifier for the detected object type. This provides a human-readable
+     * description like "AprilTag", "Note", "Coral", etc. Returns empty string if not set.
+     */
+    public String getDetectedClass() {
+        return byteListToString(detectedClassBytes);
+    }
+
+    /** Set the detected class name from a string. */
+    public void setDetectedClass(String className) {
+        this.detectedClassBytes = stringToByteList(className);
     }
 
     public double getYaw() {
@@ -188,6 +261,7 @@ public class PhotonTrackedTarget
         result = prime * result + ((altCameraToTarget == null) ? 0 : altCameraToTarget.hashCode());
         temp = Double.doubleToLongBits(poseAmbiguity);
         result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((detectedClassBytes == null) ? 0 : detectedClassBytes.hashCode());
         result = prime * result + ((minAreaRectCorners == null) ? 0 : minAreaRectCorners.hashCode());
         result = prime * result + ((detectedCorners == null) ? 0 : detectedCorners.hashCode());
         return result;
@@ -215,6 +289,9 @@ public class PhotonTrackedTarget
         } else if (!altCameraToTarget.equals(other.altCameraToTarget)) return false;
         if (Double.doubleToLongBits(poseAmbiguity) != Double.doubleToLongBits(other.poseAmbiguity))
             return false;
+        if (detectedClassBytes == null) {
+            if (other.detectedClassBytes != null) return false;
+        } else if (!detectedClassBytes.equals(other.detectedClassBytes)) return false;
         if (minAreaRectCorners == null) {
             if (other.minAreaRectCorners != null) return false;
         } else if (!minAreaRectCorners.equals(other.minAreaRectCorners)) return false;
@@ -240,6 +317,8 @@ public class PhotonTrackedTarget
                 + objDetectId
                 + ", objDetectConf="
                 + objDetectConf
+                + ", detectedClass="
+                + getDetectedClass()
                 + ", bestCameraToTarget="
                 + bestCameraToTarget
                 + ", altCameraToTarget="

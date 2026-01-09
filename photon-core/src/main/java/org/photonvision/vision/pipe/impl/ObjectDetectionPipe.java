@@ -18,9 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
-import java.util.Optional;
 import org.opencv.core.Mat;
-import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.objects.ObjectDetector;
@@ -37,13 +35,17 @@ public class ObjectDetectionPipe
     private volatile String currentModelUID;
 
     private static final org.photonvision.common.logging.Logger logger =
-            new org.photonvision.common.logging.Logger(ObjectDetectionPipe.class, org.photonvision.common.logging.LogGroup.VisionModule);
+            new org.photonvision.common.logging.Logger(
+                    ObjectDetectionPipe.class, org.photonvision.common.logging.LogGroup.VisionModule);
 
     // Global per-UID load counters to detect pathological repeated creations
-    private static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.AtomicInteger> loadCounts = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.concurrent.ConcurrentHashMap<
+                    String, java.util.concurrent.atomic.AtomicInteger>
+            loadCounts = new java.util.concurrent.ConcurrentHashMap<>();
 
     // Timestamp (ms) of last load attempt per UID to implement a cooldown
-    private static final java.util.concurrent.ConcurrentHashMap<String, Long> lastLoadMs = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.concurrent.ConcurrentHashMap<String, Long> lastLoadMs =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     // Threshold beyond which we will log a warning about frequent loads
     private static final int LOAD_WARNING_THRESHOLD = 5;
@@ -82,16 +84,25 @@ public class ObjectDetectionPipe
                     }
                     // Defensive: if params.model() is null fallback to NullModel
                     try {
-                        detector = params != null && params.model() != null ? params.model().load() : NullModel.getInstance();
+                        detector =
+                                params != null && params.model() != null
+                                        ? params.model().load()
+                                        : NullModel.getInstance();
                     } catch (Exception e) {
                         // If loading the model fails, fall back to NullModel and keep going
-                        logger.error("Failed to load detector for UID " + desiredModelUID + ", falling back to NullModel", e);
+                        logger.error(
+                                "Failed to load detector for UID "
+                                        + desiredModelUID
+                                        + ", falling back to NullModel",
+                                e);
                         detector = NullModel.getInstance();
                     }
                     currentModelUID = desiredModelUID;
 
                     // Track load count for diagnostics
-                    var counter = loadCounts.computeIfAbsent(desiredModelUID, k -> new java.util.concurrent.atomic.AtomicInteger());
+                    var counter =
+                            loadCounts.computeIfAbsent(
+                                    desiredModelUID, k -> new java.util.concurrent.atomic.AtomicInteger());
                     int cnt = counter.incrementAndGet();
                     long now = System.currentTimeMillis();
                     long last = lastLoadMs.getOrDefault(desiredModelUID, 0L);
@@ -114,7 +125,11 @@ public class ObjectDetectionPipe
                             for (int i = start; i < end; i++) {
                                 sb.append("\n\tat ").append(trace[i].toString());
                             }
-                            logger.warn("Load triggered from thread '" + Thread.currentThread().getName() + "' with trace:" + sb.toString());
+                            logger.warn(
+                                    "Load triggered from thread '"
+                                            + Thread.currentThread().getName()
+                                            + "' with trace:"
+                                            + sb.toString());
                         } catch (Exception ignored) {
                         }
                         // Suppress further load attempts for the cooldown period by falling back to NullModel

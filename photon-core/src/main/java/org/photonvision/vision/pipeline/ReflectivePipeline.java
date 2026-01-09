@@ -156,6 +156,11 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             targetList = collect2dTargetsResult.output;
         }
 
+        // Set the detected class name for reflective targets
+        for (TrackedTarget target : targetList) {
+            target.setDetectedClass("Reflective");
+        }
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 

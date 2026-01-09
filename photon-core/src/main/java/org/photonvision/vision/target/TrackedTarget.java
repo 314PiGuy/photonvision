@@ -69,6 +69,7 @@ public class TrackedTarget implements Releasable {
 
     private int m_classId = -1;
     private double m_confidence = -1;
+    private String m_detectedClassName = "";
 
     public TrackedTarget(
             PotentialTarget origTarget, TargetCalculationParameters params, CVShape shape) {
@@ -172,6 +173,27 @@ public class TrackedTarget implements Releasable {
      */
     public int getClassID() {
         return m_classId;
+    }
+
+    /**
+     * Get the string identifier for the detected object type. This returns a human-readable
+     * description such as: - "AprilTag" for fiducial markers - The class name from object detection
+     * (e.g., "Note", "Coral") - "ColoredShape" for colored shape detection - "Reflective" for
+     * reflective tape detection - Empty string if not set
+     *
+     * @return The detected class name string
+     */
+    public String getDetectedClass() {
+        return m_detectedClassName;
+    }
+
+    /**
+     * Set the detected class name string.
+     *
+     * @param className The class name to set
+     */
+    public void setDetectedClass(String className) {
+        this.m_detectedClassName = className != null ? className : "";
     }
 
     public TrackedTarget(
@@ -455,6 +477,7 @@ public class TrackedTarget implements Releasable {
                             t.getBestCameraToTarget3d(),
                             t.getAltCameraToTarget3d(),
                             t.getPoseAmbiguity(),
+                            t.getDetectedClass(),
                             minAreaRectCorners,
                             detectedCorners));
         }

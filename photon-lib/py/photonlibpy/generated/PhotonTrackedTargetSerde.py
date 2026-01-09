@@ -39,8 +39,8 @@ if TYPE_CHECKING:
 
 class PhotonTrackedTargetSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "cc6dbb5c5c1e0fa808108019b20863f1"
-    MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"
+    MESSAGE_VERSION = "70c1fc927d6daf2fe1a3a219f0c8c839"
+    MESSAGE_FORMAT = "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;int8 detectedClassBytes[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"
 
     @staticmethod
     def pack(value: "PhotonTrackedTarget") -> "Packet":
@@ -73,6 +73,9 @@ class PhotonTrackedTargetSerde:
 
         # poseAmbiguity is of intrinsic type float64
         ret.encodeDouble(value.poseAmbiguity)
+
+        # detectedClassBytes is a custom VLA!
+        ret.encodeByteList(value.detectedClassBytes)
 
         # minAreaRectCorners is a custom VLA!
         ret.encodeList(value.minAreaRectCorners, TargetCorner.photonStruct)
@@ -112,6 +115,9 @@ class PhotonTrackedTargetSerde:
 
         # poseAmbiguity is of intrinsic type float64
         ret.poseAmbiguity = packet.decodeDouble()
+
+        # detectedClassBytes is a custom VLA!
+        ret.detectedClassBytes = packet.decodeByteList()
 
         # minAreaRectCorners is a custom VLA!
         ret.minAreaRectCorners = packet.decodeList(TargetCorner.photonStruct)

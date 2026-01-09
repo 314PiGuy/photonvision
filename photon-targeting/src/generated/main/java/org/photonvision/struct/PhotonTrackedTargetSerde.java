@@ -43,9 +43,9 @@ import edu.wpi.first.math.geometry.Transform3d;
 public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget> {
 
     @Override
-    public final String getInterfaceUUID() { return "cc6dbb5c5c1e0fa808108019b20863f1"; }
+    public final String getInterfaceUUID() { return "70c1fc927d6daf2fe1a3a219f0c8c839"; }
     @Override
-    public final String getSchema() { return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"; }
+    public final String getSchema() { return "float64 yaw;float64 pitch;float64 area;float64 skew;int32 fiducialId;int32 objDetectId;float32 objDetectConf;Transform3d bestCameraToTarget;Transform3d altCameraToTarget;float64 poseAmbiguity;int8 detectedClassBytes[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 minAreaRectCorners[?];TargetCorner:16f6ac0dedc8eaccb951f4895d9e18b6 detectedCorners[?];"; }
     @Override
     public final String getTypeName() { return "PhotonTrackedTarget"; }
 
@@ -85,6 +85,20 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         // field poseAmbiguity is of intrinsic type float64
         packet.encode((double) value.poseAmbiguity);
 
+        // detectedClassBytes is a variable-length array of bytes
+        if (value.detectedClassBytes != null) {
+            byte size = (byte) value.detectedClassBytes.size();
+            if (value.detectedClassBytes.size() > Byte.MAX_VALUE) {
+                throw new RuntimeException("Array too long! Got " + size);
+            }
+            packet.encode(size);
+            for (byte b : value.detectedClassBytes) {
+                packet.encode(b);
+            }
+        } else {
+            packet.encode((byte) 0);
+        }
+
         // minAreaRectCorners is a custom VLA!
         packet.encodeList(value.minAreaRectCorners);
 
@@ -123,6 +137,13 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
 
         // poseAmbiguity is of intrinsic type float64
         ret.poseAmbiguity = packet.decodeDouble();
+
+        // detectedClassBytes is a variable-length array of bytes
+        byte detectedClassBytesLength = packet.decodeByte();
+        ret.detectedClassBytes = new java.util.ArrayList<>();
+        for (int i = 0; i < detectedClassBytesLength; i++) {
+            ret.detectedClassBytes.add(packet.decodeByte());
+        }
 
         // minAreaRectCorners is a custom VLA!
         ret.minAreaRectCorners = packet.decodeList(TargetCorner.photonStruct);

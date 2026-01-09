@@ -57,6 +57,9 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
           >Camera Matching</v-list-item-title
         >
       </v-list-item>
+      <v-list-item link to="/stereo" prepend-icon="mdi-camera-burst">
+        <v-list-item-title>Stereo</v-list-item-title>
+      </v-list-item>
       <v-list-item link to="/docs" prepend-icon="mdi-bookshelf">
         <v-list-item-title>Documentation</v-list-item-title>
       </v-list-item>

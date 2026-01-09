@@ -56,6 +56,8 @@ export interface PhotonTarget {
   fiducialId: number;
   confidence: number;
   classId: number;
+  // String identifier for the detected object type (e.g., "AprilTag", "Note", "Coral")
+  detectedClass?: string;
   // undefined if 3d isn't enabled
   pose?: Transform3d;
 }

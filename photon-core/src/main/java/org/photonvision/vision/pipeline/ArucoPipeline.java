@@ -223,6 +223,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                                 new TargetCalculationParameters(
                                         false, null, null, null, null, frameStaticProperties));
 
+                // Set the detected class name for this ArUco target
+                target.setDetectedClass("ArUco");
+
                 var correctedBestPose =
                         MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
                 var correctedAltPose =
@@ -234,6 +237,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                         new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
                 targetList.add(target);
+            }
+        }
+
+        // Also set detected class for targets created for multitag (if any still don't have it set)
+        for (TrackedTarget target : targetList) {
+            if (target.getDetectedClass().isEmpty()) {
+                target.setDetectedClass("ArUco");
             }
         }
 

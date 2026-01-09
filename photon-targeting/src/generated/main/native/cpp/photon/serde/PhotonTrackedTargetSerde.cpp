@@ -41,6 +41,7 @@ void StructType::Pack(Packet& packet, const PhotonTrackedTarget& value) {
   packet.Pack<frc::Transform3d>(value.bestCameraToTarget);
   packet.Pack<frc::Transform3d>(value.altCameraToTarget);
   packet.Pack<double>(value.poseAmbiguity);
+  packet.Pack<std::vector<int8_t>>(value.detectedClassBytes);
   packet.Pack<std::vector<photon::TargetCorner>>(value.minAreaRectCorners);
   packet.Pack<std::vector<photon::TargetCorner>>(value.detectedCorners);
 }
@@ -57,6 +58,7 @@ PhotonTrackedTarget StructType::Unpack(Packet& packet) {
     .bestCameraToTarget = packet.Unpack<frc::Transform3d>(),
     .altCameraToTarget = packet.Unpack<frc::Transform3d>(),
     .poseAmbiguity = packet.Unpack<double>(),
+    .detectedClassBytes = packet.Unpack<std::vector<int8_t>>(),
     .minAreaRectCorners = packet.Unpack<std::vector<photon::TargetCorner>>(),
     .detectedCorners = packet.Unpack<std::vector<photon::TargetCorner>>(),
   }};

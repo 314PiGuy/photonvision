@@ -60,15 +60,19 @@ public class ObjectDetectionPipeline
     public ObjectDetectionPipeline() {
         super(PROCESSING_TYPE);
         settings = new ObjectDetectionPipelineSettings();
-        new org.photonvision.common.logging.Logger(ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule).debug(
-                () -> "Constructed ObjectDetectionPipeline instance: " + System.identityHashCode(this));
+        new org.photonvision.common.logging.Logger(
+                        ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule)
+                .debug(
+                        () -> "Constructed ObjectDetectionPipeline instance: " + System.identityHashCode(this));
     }
 
     public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
-        new org.photonvision.common.logging.Logger(ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule).debug(
-                () -> "Constructed ObjectDetectionPipeline instance: " + System.identityHashCode(this));
+        new org.photonvision.common.logging.Logger(
+                        ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule)
+                .debug(
+                        () -> "Constructed ObjectDetectionPipeline instance: " + System.identityHashCode(this));
     }
 
     @Override
@@ -104,10 +108,18 @@ public class ObjectDetectionPipeline
         if (modelToUse != lastSelectedModel
                 || settings.confidence != lastConfidence
                 || settings.nms != lastNms) {
-            new org.photonvision.common.logging.Logger(ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule).debug(() ->
-                    "Updating detector params on pipeline instance " + System.identityHashCode(this) +
-                            " to model=" + (modelToUse == null ? "null" : modelToUse.getUID()) +
-                            " conf=" + settings.confidence + " nms=" + settings.nms);
+            new org.photonvision.common.logging.Logger(
+                            ObjectDetectionPipeline.class, org.photonvision.common.logging.LogGroup.VisionModule)
+                    .debug(
+                            () ->
+                                    "Updating detector params on pipeline instance "
+                                            + System.identityHashCode(this)
+                                            + " to model="
+                                            + (modelToUse == null ? "null" : modelToUse.getUID())
+                                            + " conf="
+                                            + settings.confidence
+                                            + " nms="
+                                            + settings.nms);
             objectDetectorPipe.setParams(
                     new ObjectDetectionPipeParams(settings.confidence, settings.nms, modelToUse));
             lastSelectedModel = modelToUse;
@@ -169,13 +181,35 @@ public class ObjectDetectionPipeline
                 collect2dTargetsPipe.run(sortContoursResult.output);
         sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
+        // Set the detected class name on each target based on class ID and class names array
+        for (TrackedTarget target : collect2dTargetsResult.output) {
+            int classId = target.getClassID();
+            if (classId >= 0 && names != null && classId < names.size()) {
+                target.setDetectedClass(names.get(classId));
+            } else if (classId >= 0) {
+                target.setDetectedClass("Object Detection");
+            }
+        }
+
         // Debug: log the intermediate NN output and final target counts
-        logger.debug(() -> "NN results size=" + neuralNetworkResult.output.size() + " | filtered shapes=" + filterContoursResult.output.size() + " | targets=" + collect2dTargetsResult.output.size());
+        // logger.debug(
+        //         () ->
+        //                 "NN results size="
+        //                         + neuralNetworkResult.output.size()
+        //                         + " | filtered shapes="
+        //                         + filterContoursResult.output.size()
+        //                         + " | targets="
+        //                         + collect2dTargetsResult.output.size());
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        logger.debug(() -> "Returning pipeline result with " + collect2dTargetsResult.output.size() + " targets and classNames=" + names);
+        // logger.debug(
+        //         () ->
+        //                 "Returning pipeline result with "
+        //                         + collect2dTargetsResult.output.size()
+        //                         + " targets and classNames="
+        //                         + names);
 
         return new CVPipelineResult(
                 frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);

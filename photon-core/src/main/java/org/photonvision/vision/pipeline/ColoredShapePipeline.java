@@ -214,6 +214,11 @@ public class ColoredShapePipeline
             targetList = collect2dTargetsResult.output;
         }
 
+        // Set the detected class name for colored shape targets
+        for (TrackedTarget target : targetList) {
+            target.setDetectedClass("Colored Shape");
+        }
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 

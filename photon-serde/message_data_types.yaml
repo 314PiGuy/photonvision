@@ -49,3 +49,13 @@ float64:
   java_encode_shim: encodeDouble
   python_decode_shim: decodeDouble
   python_encode_shim: encodeDouble
+int8:
+  len: 1
+  java_type: byte
+  cpp_type: int8_t
+  java_decode_method: decodeByte
+  java_list_decode_method: decodeByteList
+  java_list_encode_method: encodeByteList
+  java_encode_shim: encode
+  python_decode_shim: decodeByte
+  python_encode_shim: encodeByte

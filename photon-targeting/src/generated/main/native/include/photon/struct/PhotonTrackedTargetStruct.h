@@ -46,6 +46,7 @@ struct PhotonTrackedTarget_PhotonStruct {
   frc::Transform3d bestCameraToTarget;
   frc::Transform3d altCameraToTarget;
   double poseAmbiguity;
+  std::vector<int8_t> detectedClassBytes;
   std::vector<photon::TargetCorner> minAreaRectCorners;
   std::vector<photon::TargetCorner> detectedCorners;
 

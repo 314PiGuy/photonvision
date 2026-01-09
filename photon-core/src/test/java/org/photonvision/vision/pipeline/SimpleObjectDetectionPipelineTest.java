@@ -13,9 +13,10 @@ public class SimpleObjectDetectionPipelineTest {
         SimpleObjectDetectionPipeline p = new SimpleObjectDetectionPipeline();
         // use default settings (null) which should fall back to NullModel safely
         Frame f = new Frame();
-        assertDoesNotThrow(() -> {
-            var res = p.run(f, null);
-            assertNotNull(res);
-        });
+        assertDoesNotThrow(
+                () -> {
+                    var res = p.run(f, null);
+                    assertNotNull(res);
+                });
     }
 }

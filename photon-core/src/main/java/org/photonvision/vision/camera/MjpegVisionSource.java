@@ -211,7 +211,7 @@ public class MjpegVisionSource extends VisionSource {
                                     config.FOV,
                                     cal);
                 }
-                System.out.println("Got MJPEG frame: " + mat.size());
+                // System.out.println("Got MJPEG frame: " + mat.size());
                 return new Frame(
                         frameCount++,
                         new CVMat(mat),

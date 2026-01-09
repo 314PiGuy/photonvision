@@ -27,7 +27,8 @@ public class SequentialPipeline extends CVPipeline<CVPipelineResult, SequentialP
         instantiateChildrenIfNeeded();
     }
 
-    private boolean childrenSettingsEqual(java.util.List<CVPipelineSettings> a, java.util.List<CVPipelineSettings> b) {
+    private boolean childrenSettingsEqual(
+            java.util.List<CVPipelineSettings> a, java.util.List<CVPipelineSettings> b) {
         if (a == b) return true;
         if (a == null || b == null) return false;
         if (a.size() != b.size()) return false;
@@ -74,7 +75,8 @@ public class SequentialPipeline extends CVPipeline<CVPipelineResult, SequentialP
     private void instantiateChildrenIfNeeded() {
         if (!childrenSettingsEqual(lastSeenChildrenSettings, settings.children)) {
             instantiateChildren();
-            lastSeenChildrenSettings = settings.children == null ? null : new java.util.ArrayList<>(settings.children);
+            lastSeenChildrenSettings =
+                    settings.children == null ? null : new java.util.ArrayList<>(settings.children);
         }
     }
 
@@ -83,7 +85,8 @@ public class SequentialPipeline extends CVPipeline<CVPipelineResult, SequentialP
         // Ensure children are up-to-date only when settings change
         if (!childrenSettingsEqual(lastSeenChildrenSettings, settings.children)) {
             instantiateChildren();
-            lastSeenChildrenSettings = settings.children == null ? null : new java.util.ArrayList<>(settings.children);
+            lastSeenChildrenSettings =
+                    settings.children == null ? null : new java.util.ArrayList<>(settings.children);
         }
 
         for (int i = 0; i < children.size(); i++) {

@@ -169,7 +169,9 @@ public class JacksonUtils {
                 for (Object child : children) {
                     if (child instanceof Map) {
                         Map<?, ?> childMap = (Map<?, ?>) child;
-                        if (childMap.containsKey("type") && childMap.containsKey("properties") && childMap.get("properties") instanceof Map) {
+                        if (childMap.containsKey("type")
+                                && childMap.containsKey("properties")
+                                && childMap.get("properties") instanceof Map) {
                             // Flatten: merge properties into a new map, set pipelineType
                             Map<String, Object> merged = new java.util.HashMap<>();
                             merged.put("pipelineType", childMap.get("type"));

@@ -24,6 +24,7 @@ class PhotonTrackedTarget:
     poseAmbiguity: float = 0.0
     objDetectId: int = -1
     objDetectConf: float = 0.0
+    detectedClassBytes: list[int] = field(default_factory=list)
 
     def getYaw(self) -> float:
         return self.yaw
@@ -54,6 +55,28 @@ class PhotonTrackedTarget:
 
     def getAlternateCameraToTarget(self) -> Transform3d:
         return self.altCameraToTarget
+
+    def getDetectedObjectClassID(self) -> int:
+        """Get the object detection class ID, or -1 if not set."""
+        return self.objDetectId
+
+    def getDetectedObjectConfidence(self) -> float:
+        """Get the object detection confidence, or -1 if not set."""
+        return self.objDetectConf
+
+    def getDetectedClass(self) -> str:
+        """
+        Get the string identifier for the detected object type.
+        This returns a human-readable description such as:
+        - "AprilTag" for fiducial markers
+        - The class name from object detection (e.g., "Note", "Coral")
+        - "ColoredShape" for colored shape detection
+        - "Reflective" for reflective tape detection
+        - Empty string if not set
+        """
+        if not self.detectedClassBytes:
+            return ""
+        return bytes(self.detectedClassBytes).decode('utf-8', errors='replace')
 
     def _decodeTargetList(self, packet: Packet, numTargets: int) -> list[TargetCorner]:
         retList = []

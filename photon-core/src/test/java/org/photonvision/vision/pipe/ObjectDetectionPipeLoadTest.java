@@ -2,15 +2,14 @@ package org.photonvision.vision.pipe;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.objects.Model;
+import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.pipe.impl.ObjectDetectionPipe;
 import org.photonvision.vision.pipe.impl.ObjectDetectionPipe.ObjectDetectionPipeParams;
-import org.photonvision.vision.objects.NullModel;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ObjectDetectionPipeLoadTest {
     static class CountingModel implements Model {
@@ -47,7 +46,8 @@ public class ObjectDetectionPipeLoadTest {
         }
 
         @Override
-        public org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties getProperties() {
+        public org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties
+                getProperties() {
             return null;
         }
     }
@@ -55,7 +55,8 @@ public class ObjectDetectionPipeLoadTest {
     @BeforeAll
     public static void ensureNativeOrSkip() {
         // We only need native libraries for CVMat allocation; skip tests otherwise
-        org.junit.jupiter.api.Assumptions.assumeTrue(TestUtils.loadLibraries(), "Native libraries not available");
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                TestUtils.loadLibraries(), "Native libraries not available");
     }
 
     @Test
@@ -71,7 +72,8 @@ public class ObjectDetectionPipeLoadTest {
             pipe.run(mat);
         }
 
-        assertEquals(1, cm.getLoadCount(), "Model.load should be called only once for identical model uid");
+        assertEquals(
+                1, cm.getLoadCount(), "Model.load should be called only once for identical model uid");
 
         // now switch to a different model uid
         CountingModel cm2 = new CountingModel("two");

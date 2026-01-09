@@ -52,6 +52,9 @@
     type: Transform3d
   - name: poseAmbiguity
     type: float64
+  - name: detectedClassBytes
+    type: int8
+    vla: True
   - name: minAreaRectCorners
     type: TargetCorner
     vla: True

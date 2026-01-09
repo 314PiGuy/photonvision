@@ -67,6 +67,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     }
 
     private volatile Frame lastDebugFrame = null;
+    private volatile R lastResult = null;
 
     public R run(Frame frame, QuirkyCamera cameraQuirks) {
         if (released) {
@@ -82,6 +83,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
         // }
         R result = process(frame, settings);
+        lastResult = result;
 
         result.setImageCaptureTimestampNanos(frame.timestampNanos);
 
@@ -130,6 +132,10 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         } catch (Exception e) {
             return java.util.Optional.empty();
         }
+    }
+
+    public R getLastResult() {
+        return lastResult;
     }
 
     /** Return the pipeline node at the given path. Default: if path is empty or null, return this. */

@@ -269,6 +269,26 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 resp.put("status", "no_frame");
             }
 
+            var lastRes = node.getLastResult();
+            if (lastRes != null
+                    && lastRes instanceof org.photonvision.vision.pipeline.result.CVPipelineResult) {
+                var cvRes = (org.photonvision.vision.pipeline.result.CVPipelineResult) lastRes;
+                var targets = new java.util.ArrayList<java.util.Map<String, Object>>();
+                for (var t : cvRes.targets) {
+                    var tMap = new java.util.HashMap<String, Object>();
+                    tMap.put("yaw", t.getYaw());
+                    tMap.put("pitch", t.getPitch());
+                    tMap.put("area", t.getArea());
+                    tMap.put("skew", t.getSkew());
+                    tMap.put("fiducialId", t.getFiducialId());
+                    tMap.put("classId", t.getClassID());
+                    tMap.put("detectedClass", t.getDetectedClass());
+                    targets.add(tMap);
+                }
+                resp.put("targets", targets);
+                resp.put("classNames", cvRes.objectDetectionClassNames);
+            }
+
             DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("nodeFrame", resp));
         } catch (Exception e) {
             logger.error("Failed to handle node frame request", e);
@@ -276,9 +296,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     /**
-     * Normalize pipeline import payloads from the UI by resolving shorthand model references
-     * (e.g. { model: { name: "yolo11n_640", backend: "ONNX" } }) to a full
-     * ModelProperties-like map that contains modelPath so server can resolve it correctly.
+     * Normalize pipeline import payloads from the UI by resolving shorthand model references (e.g. {
+     * model: { name: "yolo11n_640", backend: "ONNX" } }) to a full ModelProperties-like map that
+     * contains modelPath so server can resolve it correctly.
      */
     public static void normalizeModelShorthandInPipelinePayload(Object data) {
         try {
@@ -291,9 +311,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             Object child = ((java.util.List<?>) children).get(i);
                             java.util.Map<?, ?> payload = null;
 
-                            if (child instanceof java.util.Collection || child != null && child.getClass().isArray()) {
+                            if (child instanceof java.util.Collection
+                                    || child != null && child.getClass().isArray()) {
                                 java.util.List<?> rawList;
-                                if (child instanceof java.util.Collection) rawList = new java.util.ArrayList<>((java.util.Collection<?>) child);
+                                if (child instanceof java.util.Collection)
+                                    rawList = new java.util.ArrayList<>((java.util.Collection<?>) child);
                                 else rawList = java.util.Arrays.asList((Object[]) child);
                                 if (rawList.size() == 2 && rawList.get(1) instanceof java.util.Map) {
                                     payload = (java.util.Map<?, ?>) rawList.get(1);
@@ -305,11 +327,22 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             if (payload != null) {
                                 Object modelObj = payload.get("model");
                                 if (modelObj instanceof java.util.Map) {
-                                    java.util.Map<String, Object> modelMap = new java.util.HashMap<>((java.util.Map<String, Object>) modelObj);
+                                    java.util.Map<String, Object> modelMap =
+                                            new java.util.HashMap<>((java.util.Map<String, Object>) modelObj);
                                     if (!modelMap.containsKey("modelPath") && modelMap.containsKey("name")) {
                                         String name = String.valueOf(modelMap.get("name"));
-                                        String backend = modelMap.containsKey("backend") ? String.valueOf(modelMap.get("backend")) : null;
-                                        var nnProps = org.photonvision.common.configuration.ConfigManager.getInstance().getConfig() != null ? org.photonvision.common.configuration.ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager() : null;
+                                        String backend =
+                                                modelMap.containsKey("backend")
+                                                        ? String.valueOf(modelMap.get("backend"))
+                                                        : null;
+                                        var nnProps =
+                                                org.photonvision.common.configuration.ConfigManager.getInstance()
+                                                                        .getConfig()
+                                                                != null
+                                                        ? org.photonvision.common.configuration.ConfigManager.getInstance()
+                                                                .getConfig()
+                                                                .neuralNetworkPropertyManager()
+                                                        : null;
                                         if (nnProps != null) {
                                             for (var candidate : nnProps.getModels()) {
                                                 boolean backendMatches = true;
@@ -321,8 +354,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                                     }
                                                 }
                                                 if (!backendMatches) continue;
-                                                if (candidate.nickname() != null && candidate.nickname().equalsIgnoreCase(name)
-                                                        || (candidate.modelPath() != null && candidate.modelPath().getFileName().toString().contains(name))) {
+                                                if (candidate.nickname() != null
+                                                                && candidate.nickname().equalsIgnoreCase(name)
+                                                        || (candidate.modelPath() != null
+                                                                && candidate.modelPath().getFileName().toString().contains(name))) {
                                                     modelMap.put("modelPath", candidate.modelPath().toString());
                                                     // Update the payload map in-place
                                                     ((java.util.Map) payload).put("model", modelMap);
@@ -524,8 +559,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 && newPropValue instanceof LinkedHashMap) {
             ObjectMapper mapper = new ObjectMapper();
             ModelProperties modelProps = mapper.convertValue(newPropValue, ModelProperties.class);
-            // If the incoming payload didn't contain a modelPath (e.g., short form { name: "yolo11n_640", backend: "ONNX" }),
-            // attempt to resolve it from the configured models list by matching nickname or filename and backend.
+            // If the incoming payload didn't contain a modelPath (e.g., short form { name: "yolo11n_640",
+            // backend: "ONNX" }),
+            // attempt to resolve it from the configured models list by matching nickname or filename and
+            // backend.
             if (modelProps.modelPath() == null) {
                 try {
                     Object nameObj = ((LinkedHashMap<?, ?>) newPropValue).get("name");
@@ -533,9 +570,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     String name = nameObj instanceof String ? (String) nameObj : null;
                     String backend = backendObj instanceof String ? (String) backendObj : null;
                     if (name != null) {
-                        var nnProps = org.photonvision.common.configuration.ConfigManager.getInstance()
-                                .getConfig()
-                                .neuralNetworkPropertyManager();
+                        var nnProps =
+                                org.photonvision.common.configuration.ConfigManager.getInstance()
+                                        .getConfig()
+                                        .neuralNetworkPropertyManager();
                         for (var candidate : nnProps.getModels()) {
                             boolean backendMatches = true;
                             if (backend != null) {
@@ -548,20 +586,28 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             if (!backendMatches) continue;
                             if (candidate.nickname() != null && candidate.nickname().equalsIgnoreCase(name)) {
                                 propField.set(currentSettings, candidate);
-                                org.photonvision.common.logging.LoggingUtils.getLogger(VisionModuleChangeSubscriber.class, "").info("Resolved model shorthand '" + name + "' to path " + candidate.modelPath());
+                                org.photonvision.common.logging.LoggingUtils.getLogger(
+                                                VisionModuleChangeSubscriber.class, "")
+                                        .info(
+                                                "Resolved model shorthand '" + name + "' to path " + candidate.modelPath());
                                 return;
                             }
                             if (candidate.modelPath() != null
                                     && (candidate.modelPath().getFileName().toString().contains(name)
                                             || candidate.modelPath().toString().contains(name))) {
                                 propField.set(currentSettings, candidate);
-                                org.photonvision.common.logging.LoggingUtils.getLogger(VisionModuleChangeSubscriber.class, "").info("Resolved model shorthand '" + name + "' to path " + candidate.modelPath());
+                                org.photonvision.common.logging.LoggingUtils.getLogger(
+                                                VisionModuleChangeSubscriber.class, "")
+                                        .info(
+                                                "Resolved model shorthand '" + name + "' to path " + candidate.modelPath());
                                 return;
                             }
                         }
                     }
                 } catch (Exception e) {
-                    org.photonvision.common.logging.LoggingUtils.getLogger(VisionModuleChangeSubscriber.class, "").warn("Failed to resolve model shorthand to full ModelProperties: " + e.getMessage());
+                    org.photonvision.common.logging.LoggingUtils.getLogger(
+                                    VisionModuleChangeSubscriber.class, "")
+                            .warn("Failed to resolve model shorthand to full ModelProperties: " + e.getMessage());
                 }
             }
             propField.set(currentSettings, modelProps);

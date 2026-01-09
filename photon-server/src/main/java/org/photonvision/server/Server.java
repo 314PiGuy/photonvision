@@ -162,6 +162,16 @@ public class Server {
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
 
+        // Stereo vision
+        app.get("/api/stereo/cameras", StereoRequestHandler::onGetAvailableCameras);
+        app.get("/api/stereo/pairs", StereoRequestHandler::onGetActivePairs);
+        app.post("/api/stereo/config", StereoRequestHandler::onUploadConfiguration);
+        app.delete("/api/stereo/pair", StereoRequestHandler::onRemovePair);
+        app.get("/api/stereo/result", StereoRequestHandler::onGetResult);
+        app.get("/api/stereo/configuration", StereoRequestHandler::onGetConfiguration);
+        app.get("/api/stereo/image", StereoRequestHandler::onGetStereoImage);
+        app.get("/api/stereo/template", StereoRequestHandler::onGetConfigTemplate);
+
         /* Testing API Events */
 
         app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
