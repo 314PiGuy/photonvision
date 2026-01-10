@@ -51,6 +51,12 @@ public class StereoVisionModule {
     private final StereoConfiguration config;
     private final AtomicBoolean running = new AtomicBoolean(false);
     
+    // Target FPS for stereo processing
+    private static final double TARGET_FPS = 15.0;
+    private static final long MIN_FRAME_INTERVAL_NS = (long)(1_000_000_000.0 / TARGET_FPS);
+    // Much stricter frame sync - only use frames within 200ms of each other to avoid latency
+    private static final long MAX_FRAME_AGE_MS = 200; // 200 ms max difference
+    
     private VisionModule leftModule;
     private VisionModule rightModule;
     
@@ -58,14 +64,52 @@ public class StereoVisionModule {
     private volatile CVPipelineResult rightResult;
     private volatile Frame leftFrame;
     private volatile Frame rightFrame;
+    private volatile long leftFrameTimestampNanos = 0;
+    private volatile long rightFrameTimestampNanos = 0;
     
     private final Object resultLock = new Object();
     private long lastProcessTime = System.nanoTime();
+    private long lastOutputTime = 0;
     private double currentFps = 0;
+    private int processedFrameCount = 0;
+    private int skippedFrameCount = 0;
+    private long lastStatusLogTime = 0;
     
     private final List<Consumer<StereoResult>> resultConsumers = new ArrayList<>();
     private final List<Consumer<String>> imageConsumers = new ArrayList<>();
     private volatile String latestStereoImage;
+
+    private static Mat selectBestMatForDisplay(Frame frame) {
+        if (frame == null) return new Mat();
+        Mat color = frame.colorImage != null ? frame.colorImage.getMat() : null;
+        if (color != null && !color.empty()) {
+            return color.clone();
+        }
+
+        Mat processed = frame.processedImage != null ? frame.processedImage.getMat() : null;
+        if (processed == null || processed.empty()) {
+            return new Mat();
+        }
+
+        // processedImage is often thresholded/gray; convert to BGR so drawing + hconcat behave.
+        Mat out = new Mat();
+        if (processed.channels() == 1) {
+            Imgproc.cvtColor(processed, out, Imgproc.COLOR_GRAY2BGR);
+        } else {
+            out = processed.clone();
+        }
+        return out;
+    }
+
+    private static Mat selectBestMatForDescriptor(Frame frame) {
+        if (frame == null) return new Mat();
+        Mat color = frame.colorImage != null ? frame.colorImage.getMat() : null;
+        if (color != null && !color.empty()) {
+            return color;
+        }
+        Mat processed = frame.processedImage != null ? frame.processedImage.getMat() : null;
+        return processed != null ? processed : new Mat();
+    }
     
     // Colors for drawing matched pairs
     private static final Scalar[] MATCH_COLORS = {
@@ -172,26 +216,68 @@ public class StereoVisionModule {
     }
 
     private void onLeftResult(CVPipelineResult result) {
+        long handlerStartNs = System.nanoTime();
         synchronized (resultLock) {
-            logger.debug(() -> "Left camera result received - seq: " + result.sequenceID + 
-                    ", hasFrame: " + (result.inputAndOutputFrame != null) +
-                    ", targets: " + result.targets.size());
+            long lockAcquiredNs = System.nanoTime();
             this.leftResult = result;
             if (result.inputAndOutputFrame != null) {
-                this.leftFrame = result.inputAndOutputFrame;
+                // Deep-copy the frame so OpenCV mats remain valid after the pipeline continues.
+                long copyStartNs = System.nanoTime();
+                Frame copy = new Frame();
+                result.inputAndOutputFrame.copyTo(copy);
+                long copyEndNs = System.nanoTime();
+                if (this.leftFrame != null) {
+                    try {
+                        this.leftFrame.release();
+                    } catch (Exception ignored) {
+                    }
+                }
+                this.leftFrame = copy;
+                this.leftFrameTimestampNanos = result.inputAndOutputFrame.timestampNanos;
+                
+                long nowNs = System.nanoTime();
+                long frameAgeMs = (nowNs - result.inputAndOutputFrame.timestampNanos) / 1_000_000;
+                long copyTimeUs = (copyEndNs - copyStartNs) / 1000;
+                long lockWaitUs = (lockAcquiredNs - handlerStartNs) / 1000;
+                
+                if (frameAgeMs > 1000 || copyTimeUs > 10000) {
+                    logger.warn(String.format("LEFT: seq=%d, frameAge=%dms, copyTime=%dus, lockWait=%dus",
+                        result.sequenceID, frameAgeMs, copyTimeUs, lockWaitUs));
+                }
             }
             tryProcessStereo();
         }
     }
 
     private void onRightResult(CVPipelineResult result) {
+        long handlerStartNs = System.nanoTime();
         synchronized (resultLock) {
-            logger.debug(() -> "Right camera result received - seq: " + result.sequenceID + 
-                    ", hasFrame: " + (result.inputAndOutputFrame != null) +
-                    ", targets: " + result.targets.size());
+            long lockAcquiredNs = System.nanoTime();
             this.rightResult = result;
             if (result.inputAndOutputFrame != null) {
-                this.rightFrame = result.inputAndOutputFrame;
+                // Deep-copy the frame so OpenCV mats remain valid after the pipeline continues.
+                long copyStartNs = System.nanoTime();
+                Frame copy = new Frame();
+                result.inputAndOutputFrame.copyTo(copy);
+                long copyEndNs = System.nanoTime();
+                if (this.rightFrame != null) {
+                    try {
+                        this.rightFrame.release();
+                    } catch (Exception ignored) {
+                    }
+                }
+                this.rightFrame = copy;
+                this.rightFrameTimestampNanos = result.inputAndOutputFrame.timestampNanos;
+                
+                long nowNs = System.nanoTime();
+                long frameAgeMs = (nowNs - result.inputAndOutputFrame.timestampNanos) / 1_000_000;
+                long copyTimeUs = (copyEndNs - copyStartNs) / 1000;
+                long lockWaitUs = (lockAcquiredNs - handlerStartNs) / 1000;
+                
+                if (frameAgeMs > 1000 || copyTimeUs > 10000) {
+                    logger.warn(String.format("RIGHT: seq=%d, frameAge=%dms, copyTime=%dus, lockWait=%dus",
+                        result.sequenceID, frameAgeMs, copyTimeUs, lockWaitUs));
+                }
             }
             tryProcessStereo();
         }
@@ -202,48 +288,97 @@ public class StereoVisionModule {
      */
     private void tryProcessStereo() {
         if (!running.get()) {
-            logger.debug("Not processing - module not running");
             return;
         }
         
-        CVPipelineResult left = leftResult;
-        CVPipelineResult right = rightResult;
+        // Periodic status logging
+        long nowMs = System.currentTimeMillis();
+        if (nowMs - lastStatusLogTime > 5000) {
+            lastStatusLogTime = nowMs;
+            logger.info("Stereo status: leftFrame=" + (leftFrame != null) + 
+                    ", rightFrame=" + (rightFrame != null) + 
+                    ", leftResult=" + (leftResult != null) + 
+                    ", rightResult=" + (rightResult != null) +
+                    ", processed=" + processedFrameCount + ", skipped=" + skippedFrameCount);
+        }
+        
+        // We just need frames, not necessarily the results synced
         Frame lFrame = leftFrame;
         Frame rFrame = rightFrame;
+        CVPipelineResult left = leftResult;
+        CVPipelineResult right = rightResult;
         
-        if (left == null || right == null || lFrame == null || rFrame == null) {
-            logger.debug(() -> "Not processing - missing data: left=" + (left != null) + 
-                    ", right=" + (right != null) + ", lFrame=" + (lFrame != null) + 
-                    ", rFrame=" + (rFrame != null));
+        // Check if we have both frames - this is the minimum requirement
+        if (lFrame == null || rFrame == null) {
             return;
         }
+
+        long lTs = leftFrameTimestampNanos;
+        long rTs = rightFrameTimestampNanos;
+        if (lTs > 0 && rTs > 0) {
+            long diffMs = Math.abs(lTs - rTs) / 1_000_000;
+            if (diffMs > MAX_FRAME_AGE_MS) {
+                skippedFrameCount++;
+                if (skippedFrameCount % 10 == 1) {
+                    logger.warn("Skipping stereo update - frames too far apart (" + diffMs + "ms). This may indicate camera latency or buffering issues. MJPEG cameras should deliver frames in real time.");
+                }
+                return;
+            }
+        }
         
-        // Just use the most recent frames from each camera - no strict sync required
-        // In real stereo systems, cameras would be hardware-synchronized, but for
-        // software-based systems we just match the most recent frames
-        long leftSeq = left.sequenceID;
-        long rightSeq = right.sequenceID;
+        // Check if enough time has passed since last output (rate limiting to TARGET_FPS)
+        long now = System.nanoTime();
+        if (now - lastOutputTime < MIN_FRAME_INTERVAL_NS) {
+            return;  // Rate limit to target FPS
+        }
         
-        logger.debug("Processing stereo pair - leftSeq: " + leftSeq + ", rightSeq: " + rightSeq + 
-                ", leftTargets: " + left.targets.size() + ", rightTargets: " + right.targets.size());
+        // Use the results we have (they might be null, we'll handle it)
+        final CVPipelineResult leftFinal = left;
+        final CVPipelineResult rightFinal = right;
         
-        // Clear results to wait for next pair
-        leftResult = null;
-        rightResult = null;
+        // We have frames - process them
+        processedFrameCount++;
+        if (processedFrameCount % 30 == 1) {
+            long frameTimeDiff = Math.abs(leftFrameTimestampNanos - rightFrameTimestampNanos) / 1_000_000;
+            int leftTargets = leftFinal != null ? leftFinal.targets.size() : 0;
+            int rightTargets = rightFinal != null ? rightFinal.targets.size() : 0;
+            logger.info("Processing stereo pair #" + processedFrameCount + 
+                    " (frame time diff: " + frameTimeDiff + "ms, FPS: " + 
+                    String.format("%.1f", currentFps) + 
+                    ", leftTargets: " + leftTargets + 
+                    ", rightTargets: " + rightTargets + ")");
+        }
         
         // Process the stereo pair
         long startTime = System.nanoTime();
-        StereoResult result = processSteroPair(left, right, lFrame, rFrame);
-        long endTime = System.nanoTime();
+        StereoResult result = processSteroPair(leftFinal, rightFinal, lFrame, rFrame);
+        long processingEndTime = System.nanoTime();
         
-        // Calculate FPS
+        // Generate annotated stereo view
+        long imageStartTime = System.nanoTime();
+        String stereoImage = createAnnotatedStereoView(lFrame, rFrame, result);
+        long imageEndTime = System.nanoTime();
+        
+        long processingMs = (processingEndTime - startTime) / 1_000_000;
+        long imageGenMs = (imageEndTime - imageStartTime) / 1_000_000;
+        
+        if (processingMs > 50 || imageGenMs > 50) {
+            logger.warn(String.format("STEREO SLOW: processing=%dms, imageGen=%dms",
+                processingMs, imageGenMs));
+        }
+        
+        long endTime = imageEndTime;
+        
+        // Update timing for rate limiting and FPS calculation
+        lastOutputTime = endTime;
         long elapsed = endTime - lastProcessTime;
         lastProcessTime = endTime;
         currentFps = 1_000_000_000.0 / elapsed;
         
-        // Generate annotated stereo view
-        String stereoImage = createAnnotatedStereoView(lFrame, rFrame, result);
-        latestStereoImage = stereoImage;
+        // Don't clobber a previously-good image with an empty frame
+        if (stereoImage != null && !stereoImage.isEmpty()) {
+            latestStereoImage = stereoImage;
+        }
         
         // Notify result consumers
         for (Consumer<StereoResult> consumer : resultConsumers) {
@@ -251,8 +386,10 @@ public class StereoVisionModule {
         }
         
         // Notify image consumers
-        for (Consumer<String> consumer : imageConsumers) {
-            consumer.accept(stereoImage);
+        if (stereoImage != null && !stereoImage.isEmpty()) {
+            for (Consumer<String> consumer : imageConsumers) {
+                consumer.accept(stereoImage);
+            }
         }
     }
 
@@ -267,43 +404,48 @@ public class StereoVisionModule {
         
         long startTime = System.nanoTime();
         
-        Mat leftImage = leftFrame.colorImage.getMat();
-        Mat rightImage = rightFrame.colorImage.getMat();
+        Mat leftImage = selectBestMatForDescriptor(leftFrame);
+        Mat rightImage = selectBestMatForDescriptor(rightFrame);
+
+        if (leftImage.empty()) logger.info("left empty");
+        if (rightImage.empty()) logger.info("right empty");
         
-        if (leftImage.empty() || rightImage.empty()) {
-            return StereoResult.empty();
-        }
+        // if (leftImage.empty() || rightImage.empty()) {
+        //     logger.debug("Empty images in processSteroPair");
+        //     return StereoResult.empty();
+        // }
         
-        // Get class names from the pipelines
-        List<String> leftClassNames = leftResult.objectDetectionClassNames != null 
+        // Get class names from the pipelines (handle null results)
+        List<String> leftClassNames = (leftResult != null && leftResult.objectDetectionClassNames != null) 
                 ? leftResult.objectDetectionClassNames : List.of();
-        List<String> rightClassNames = rightResult.objectDetectionClassNames != null 
+        List<String> rightClassNames = (rightResult != null && rightResult.objectDetectionClassNames != null) 
                 ? rightResult.objectDetectionClassNames : List.of();
         
         // Extract detections from pipeline results
-        // Note: We need to access the raw neural network results
-        // For now, we'll work with the tracked targets which have the detection info
         List<StereoDetectedObject> leftDetections = new ArrayList<>();
         List<StereoDetectedObject> rightDetections = new ArrayList<>();
         
-        // Convert tracked targets to stereo detections
-        for (var target : leftResult.targets) {
-            var bbox = target.getMinAreaRect().boundingRect();
-            var rect2d = new org.opencv.core.Rect2d(bbox.x, bbox.y, bbox.width, bbox.height);
-            
-            // Create a mock NeuralNetworkPipeResult for descriptor extraction
-            var nnResult = new NeuralNetworkPipeResult(rect2d, target.getClassID(), target.getConfidence());
-            var detection = StereoMatcher.extractDescriptor(leftImage, nnResult, leftClassNames, true);
-            leftDetections.add(detection);
+        // Convert tracked targets to stereo detections (handle null results)
+        if (!leftImage.empty() && leftResult != null && leftResult.targets != null) {
+            for (var target : leftResult.targets) {
+                var bbox = target.getMinAreaRect().boundingRect();
+                var rect2d = new org.opencv.core.Rect2d(bbox.x, bbox.y, bbox.width, bbox.height);
+                
+                var nnResult = new NeuralNetworkPipeResult(rect2d, target.getClassID(), target.getConfidence());
+                var detection = StereoMatcher.extractDescriptor(leftImage, nnResult, leftClassNames, true);
+                leftDetections.add(detection);
+            }
         }
         
-        for (var target : rightResult.targets) {
-            var bbox = target.getMinAreaRect().boundingRect();
-            var rect2d = new org.opencv.core.Rect2d(bbox.x, bbox.y, bbox.width, bbox.height);
-            
-            var nnResult = new NeuralNetworkPipeResult(rect2d, target.getClassID(), target.getConfidence());
-            var detection = StereoMatcher.extractDescriptor(rightImage, nnResult, rightClassNames, false);
-            rightDetections.add(detection);
+        if (!rightImage.empty() && rightResult != null && rightResult.targets != null) {
+            for (var target : rightResult.targets) {
+                var bbox = target.getMinAreaRect().boundingRect();
+                var rect2d = new org.opencv.core.Rect2d(bbox.x, bbox.y, bbox.width, bbox.height);
+                
+                var nnResult = new NeuralNetworkPipeResult(rect2d, target.getClassID(), target.getConfidence());
+                var detection = StereoMatcher.extractDescriptor(rightImage, nnResult, rightClassNames, false);
+                rightDetections.add(detection);
+            }
         }
         
         // Match detections across cameras
@@ -320,10 +462,10 @@ public class StereoVisionModule {
                 processingTime,
                 currentFps,
                 true,
-                leftImage.cols(),
-                leftImage.rows(),
-                rightImage.cols(),
-                rightImage.rows());
+            leftImage.empty() ? 0 : leftImage.cols(),
+            leftImage.empty() ? 0 : leftImage.rows(),
+            rightImage.empty() ? 0 : rightImage.cols(),
+            rightImage.empty() ? 0 : rightImage.rows());
     }
 
     /**
@@ -335,8 +477,8 @@ public class StereoVisionModule {
      * @return Combined side-by-side image as Base64 JPEG
      */
     public String createAnnotatedStereoView(Frame leftFrame, Frame rightFrame, StereoResult result) {
-        Mat leftImage = leftFrame.colorImage.getMat().clone();
-        Mat rightImage = rightFrame.colorImage.getMat().clone();
+        Mat leftImage = selectBestMatForDisplay(leftFrame);
+        Mat rightImage = selectBestMatForDisplay(rightFrame);
         
         // Ensure images have the same dimensions and type before concatenating
         if (leftImage.empty() || rightImage.empty()) {

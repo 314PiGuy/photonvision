@@ -111,7 +111,13 @@ public class CVPipelineResult implements Releasable {
     @Deprecated
     public double getLatencyMillis() {
         var now = MathUtils.wpiNanoTime();
-        return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
+        long delta = now - imageCaptureTimestampNanos;
+        if (delta < 0) {
+            // If capture timestamps are in a different epoch, latency can appear negative.
+            // Clamp to 0 so UI/NT don't show nonsensical values.
+            return 0.0;
+        }
+        return MathUtils.nanosToMillis(delta);
     }
 
     public double getProcessingMillis() {

@@ -82,10 +82,20 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         //     //noinspection unchecked
         //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
         // }
+        long pipelineStartNanos = org.photonvision.common.util.math.MathUtils.wpiNanoTime();
         R result = process(frame, settings);
         lastResult = result;
 
         result.setImageCaptureTimestampNanos(frame.timestampNanos);
+        
+        // Log frame age and processing time
+        long frameAgeNanos = pipelineStartNanos - frame.timestampNanos;
+        if (frameAgeNanos > 500_000_000L) {  // Log if frame is >500ms old
+            System.err.printf("[WARN] OLD FRAME: seq=%d, age=%.1fms, processing=%.1fms%n",
+                frame.sequenceID,
+                frameAgeNanos / 1_000_000.0,
+                result.processingNanos / 1_000_000.0);
+        }
 
         // Store a copy of the output frame to be used by the UI for node previews
         try {

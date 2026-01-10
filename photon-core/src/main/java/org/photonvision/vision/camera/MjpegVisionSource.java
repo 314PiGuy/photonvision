@@ -32,6 +32,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.PVCameraInfo.PVMjpegCameraInfo;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -212,12 +213,14 @@ public class MjpegVisionSource extends VisionSource {
                                     cal);
                 }
                 // System.out.println("Got MJPEG frame: " + mat.size());
+                // Create output mat as empty - processing happens in CpuImageProcessor for USB cameras
+                // For consistency, MJPEG cameras should also start with empty output
                 return new Frame(
                         frameCount++,
                         new CVMat(mat),
-                        new CVMat(mat.clone()),
+                        new CVMat(),  // Empty output mat, not a clone
                         FrameThresholdType.NONE,
-                        System.nanoTime(),
+                        MathUtils.wpiNanoTime(),
                         frameProps);
             } catch (Exception e) {
                 // Error grabbing frame

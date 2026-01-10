@@ -25,6 +25,7 @@ import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.RawFrame;
 import org.opencv.core.Mat;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.jni.CscoreExtras;
@@ -43,6 +44,47 @@ public class USBFrameProvider extends CpuImageProcessor {
     private Runnable connectedCallback;
 
     private long lastTime = 0;
+
+    // CSCore capture timestamps can come from a different timebase than MathUtils.wpiNanoTime().
+    // We estimate a translation offset at runtime so downstream latency calculations are sane.
+    private volatile boolean captureTimeOffsetInitialized = false;
+    private volatile long captureTimeOffsetNs = 0;
+    private long lastOffsetLogTime = 0;
+
+    private long normalizeCaptureTimestampNs(long captureTimeNs) {
+        if (captureTimeNs <= 0) return captureTimeNs;
+
+        long nowNs = MathUtils.wpiNanoTime();
+        long offset = nowNs - captureTimeNs;
+
+        // Initialize or low-pass filter to avoid jitter.
+        if (!captureTimeOffsetInitialized) {
+            captureTimeOffsetInitialized = true;
+            captureTimeOffsetNs = offset;
+        } else {
+            // If the offset jumps massively (e.g. source restarted), reset.
+            long prev = captureTimeOffsetNs;
+            if (Math.abs(offset - prev) > 30_000_000_000L) {
+                captureTimeOffsetNs = offset;
+            } else {
+                // 90/10 smoothing
+                captureTimeOffsetNs = (prev * 9L + offset) / 10L;
+            }
+        }
+
+        // Log offset periodically for diagnostics
+        long nowMs = System.currentTimeMillis();
+        if (nowMs - lastOffsetLogTime > 5000) {
+            lastOffsetLogTime = nowMs;
+            logger.info(String.format("Capture timestamp offset: %.3fs (raw=%dns, normalized=%dns, now=%dns)",
+                captureTimeOffsetNs / 1_000_000_000.0,
+                captureTimeNs,
+                captureTimeNs + captureTimeOffsetNs,
+                MathUtils.wpiNanoTime()));
+        }
+
+        return captureTimeNs + captureTimeOffsetNs;
+    }
 
     // subscribers are lightweight, and I'm lazy
     private final BooleanSubscriber useNewBehaviorSub;
@@ -94,6 +136,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
             // can.
             long captureTimeNs = cvSink.grabFrame(mat.getMat(), CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
+            captureTimeNs = normalizeCaptureTimestampNs(captureTimeNs);
 
             if (captureTimeNs == 0) {
                 var error = cvSink.getError();
@@ -136,7 +179,9 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat(mat, frame);
             }
 
-            return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
+            long captureTimeNs = normalizeCaptureTimestampNs(captureTimeUs * 1000);
+
+            return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeNs);
         }
     }
 
